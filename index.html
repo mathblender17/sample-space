@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample Space</title>
+<meta name="description" content="Sample Space explains one idea from maths, statistics or machine learning per issue, with simulations you can play with.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+  .hero { background: var(--screen); color: var(--screen-ink); padding: 22px var(--m) clamp(72px, 12vh, 140px); }
+  .wordmark { font-weight: 700; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+  .hero h1 { font-size: var(--step-display); line-height: 0.95; letter-spacing: -0.045em; color: #f1f7f2; margin-top: clamp(64px, 12vh, 140px); }
+  .hero p { font-size: var(--step-lead); line-height: 1.3; max-width: 30ch; margin-top: 28px; }
+  .issues { padding: clamp(72px, 10vw, 140px) var(--m); }
+  .issues h2 { margin-bottom: 40px; }
+  .issue { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px 48px; align-items: center; background: var(--surface); clip-path: var(--px-cut); padding: clamp(20px, 3vw, 40px); text-decoration: none; transition: transform 200ms ease; }
+  .issue:hover { transform: translateY(-4px); }
+  .issue h3 { font-size: var(--step-head); letter-spacing: -0.03em; margin-bottom: 16px; }
+  .issue p { margin: 0 0 8px; }
+  .issue .when { color: var(--muted); }
+  .issue img { clip-path: var(--px-cut); filter: grayscale(1) contrast(1.05); width: 100%; height: auto; }
+  .next { color: var(--muted); margin-top: 32px; }
+  footer { background: var(--surface); padding: 32px var(--m); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: var(--step-small); }
+  @media (max-width: 700px) { .issue { grid-template-columns: 1fr; } .issue img { order: -1; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <a class="wordmark" href="./"><svg class="sprite" width="20" height="20" viewBox="0 0 5 5" aria-hidden="true"><rect x="0" y="3" width="1" height="2" fill="#8dffa8"/><rect x="2" y="1" width="1" height="4" fill="#8dffa8"/><rect x="4" y="0" width="1" height="5" fill="#ff4d00"/></svg>Sample Space</a>
+  <h1>Sample Space</h1>
+  <p>One idea from maths, statistics or machine learning per issue, with simulations you can play with.</p>
+</header>
+<main class="issues">
+  <h2>Issues</h2>
+  <a class="issue" href="law-of-large-numbers/">
+    <div>
+      <h3>The law of large numbers</h3>
+      <p>Why averages tell the truth, from coin flips and roulette to mini-batch SGD, and where they stop telling it.</p>
+      <p class="when">October 2026</p>
+    </div>
+    <img src="law-of-large-numbers/assets/table-de-roulette-casino-de-monte-carlo.jpg" alt="Players around the roulette table at Monte Carlo, old postcard" width="1920" height="1226">
+  </a>
+  <p class="next">The next issue picks up where the averages leave off.</p>
+</main>
+<footer><span>© 2026 Sample Space</span><a href="https://github.com/mathblender17/sample-space">Source on GitHub</a></footer>
+</body>
+</html>

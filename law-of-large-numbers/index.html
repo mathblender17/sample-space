@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Law of Large Numbers · Sample Space</title>
+<meta name="description" content="An interactive guide to the Law of Large Numbers: coin flips, Monte Carlo, mini-batch SGD, casinos and A/B tests, with simulations you can play with.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ---------- hero: a stack of file folders on the screen ---------- */
+  .hero { position: relative; min-height: max(100svh, 780px); background: var(--screen); color: var(--screen-ink); overflow: hidden; }
+  .bar { position: relative; display: flex; justify-content: center; align-items: center; padding: 22px var(--m); font-size: var(--step-small); }
+  .wordmark { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: var(--step-body); }
+  .bar .right { position: absolute; right: var(--m); }
+  .hero-text { text-align: center; padding: clamp(40px, 6vh, 72px) var(--m) 0; }
+  .hero h1 { font-size: var(--step-display); line-height: 0.95; letter-spacing: -0.045em; color: #f1f7f2; }
+  .hero-sub { font-size: var(--step-body); max-width: 50ch; margin: 28px auto 0; color: var(--screen-ink); }
+  .folders { position: absolute; left: 7%; right: 7%; top: max(54%, 450px); bottom: 0; }
+  .folder { position: absolute; inset: calc(var(--i) * 64px) 0 0 0; background: var(--c); color: var(--t); }
+  .folder .tab { position: absolute; bottom: 100%; left: var(--x); width: clamp(140px, 17%, 220px); height: 40px; background: var(--c); color: var(--t);
+    clip-path: var(--px-tab); display: flex; align-items: center; justify-content: center; font-size: var(--step-small); font-weight: 500; text-decoration: none;
+    padding-top: 8px; transition: transform 160ms ease; }
+  .folder .tab:hover { transform: translateY(-4px); }
+  .folder.front { padding: 32px; }
+
+  /* ---------- sections ---------- */
+  section { padding-block: var(--gap) 0; }
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); padding-inline: var(--m); }
+
+  /* hook: a statement with picture frames inside the line */
+  .hook { padding-block: clamp(96px, 16vh, 180px) clamp(40px, 6vh, 80px); }
+  .hook { align-items: center; }
+  .hook p { grid-column: 1 / span 6; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; letter-spacing: -0.015em; max-width: 34ch; margin: 0; }
+  .hook-pic { grid-column: 8 / -1; margin: 0; }
+  .thumb { display: inline-block; height: 0.9em; width: 1.4em; vertical-align: -0.12em; margin: 0 0.12em; clip-path: var(--px-cut); --p: 3px; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.1); }
+
+  /* the toy */
+  .toy-text { grid-column: 1 / span 5; }
+  .toy-text h2 { margin-bottom: 32px; }
+  .toy-screen { grid-column: 6 / -1; padding: clamp(16px, 2vw, 28px); align-self: start; position: sticky; top: 24px; }
+  .toy-screen .readout { margin: 16px 0; min-height: 3.2em; }
+  table.dilute { border-collapse: collapse; margin: 8px 0 28px; font-variant-numeric: tabular-nums; width: 100%; max-width: 30rem; }
+  .dilute th, .dilute td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 2px solid var(--surface); }
+  .dilute th { font-weight: 500; color: var(--muted); font-size: var(--step-small); }
+  .dilute tr:last-child td { font-weight: 700; border-bottom: 0; }
+  .em { font-weight: 700; }
+
+  /* the statement */
+  .law-text { grid-column: 1 / span 7; }
+  .law-text h2 { margin-bottom: 32px; }
+  .eq { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.01em; background: var(--surface); padding: 24px 28px; clip-path: var(--px-cut); max-width: none; margin: 8px 0 32px; }
+  .proof { padding-left: 1.3em; margin: 16px 0 28px; max-width: 64ch; }
+  .proof li { margin-bottom: 12px; padding-left: 4px; }
+  .law-pic { grid-column: 9 / -1; align-self: start; margin: 0; }
+  .frame { clip-path: var(--px-cut); background: var(--surface); }
+  .frame img { width: 100%; height: auto; filter: grayscale(1) contrast(1.05); }
+  figcaption { font-size: var(--step-small); color: var(--muted); margin-top: 12px; }
+
+  /* history: stepped tiles */
+  .tiles { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; padding-inline: var(--m); align-items: start; }
+  .tiles h2 { grid-column: 7 / span 6; grid-row: 1; font-size: var(--step-lead); align-self: start; padding-top: 2vh; }
+  .tile { position: relative; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; clip-path: var(--px-cut); overflow: hidden; grid-row: 1 / span 2; }
+  .tile .fig { font-size: var(--step-head); font-weight: 500; letter-spacing: -0.04em; line-height: 1; position: relative; }
+  .tile p { position: relative; z-index: 1; margin: 0; max-width: 30ch; }
+  .tile .fig { z-index: 1; }
+  .tile img { position: absolute; mix-blend-mode: multiply; filter: grayscale(1) contrast(1.2); }
+  .t1 { grid-column: 1 / span 6; height: 70vh; min-height: 520px; background: var(--accent); color: var(--ink); }
+  .t1 img { right: 5%; top: 6%; width: 42%; }
+  .t1 p { max-width: 25ch; }
+  .t2 { grid-column: 7 / span 3; height: 44vh; min-height: 330px; margin-top: 14vh; background: var(--ink); color: #eef2ee; grid-row: 2; }
+  .t3 { grid-column: 10 / span 3; height: 34vh; min-height: 300px; margin-top: 26vh; background: var(--surface); grid-row: 2; }
+  .t3 img { right: 0; top: 0; width: 44%; height: 100%; object-fit: cover; object-position: 50% 15%; mix-blend-mode: normal; }
+  .t3 p { max-width: 52%; }
+  .tiles .t2, .tiles .t3 { grid-row: 1; }
+
+  /* speed: tiles that grow */
+  .grow { align-items: end; row-gap: 20px; }
+  .grow-head { grid-column: 1 / span 7; grid-row: 1; align-self: start; }
+  .grow-head h2 { margin-bottom: 24px; }
+  .g { display: flex; flex-direction: column; gap: 18px; grid-row: 2; }
+  .g .pix { width: 100%; clip-path: var(--px-cut); background: var(--screen); display: grid; place-items: center; overflow: hidden; }
+  .g canvas { image-rendering: pixelated; width: 100%; height: 100%; }
+  .g1 { grid-column: 1 / span 3; } .g1 .pix { height: 30vh; min-height: 220px; }
+  .g2 { grid-column: 4 / span 4; } .g2 .pix { height: 44vh; min-height: 320px; }
+  .g3 { grid-column: 8 / span 5; grid-row: 1 / span 2; } .g3 .pix { height: 60vh; min-height: 440px; }
+  .g h3 { margin-bottom: 6px; }
+  .g p { margin: 0; color: var(--muted); }
+
+  /* limits: two-column list with sprite bullets */
+  .limits .cat { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; padding-top: 96px; margin-bottom: 40px; }
+  .limits .cat:first-of-type { padding-top: 0; }
+  .limits .cat h3 { font-size: var(--step-head); letter-spacing: -0.03em; }
+  .limits .cat span { color: var(--muted); }
+  .items { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; row-gap: 40px; list-style: none; padding: 0; margin: 0; }
+  .items li { display: flex; gap: 20px; }
+  .items .row { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
+  .items .row span { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .items p { margin: 6px 0 0; max-width: 46ch; }
+  .limits-intro { grid-column: 1 / span 8; margin-bottom: 72px; }
+  .limits-intro h2, .grow-head h2 { margin-bottom: 24px; }
+
+  /* in the wild: one screen on a big pixel block, swapped from a list */
+  .wild { position: relative; }
+  .wild-list { grid-column: 1 / span 4; align-self: end; display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; }
+  .wild-list h2, .wild-list button { font-size: clamp(1.75rem, 1.2rem + 1.7vw, 2.75rem); line-height: 1.15; letter-spacing: -0.03em; }
+  .wild-list h2 { color: var(--muted); margin-bottom: 4px; }
+  .wild-list button { font-family: inherit; font-weight: 500; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--muted); transition: color 240ms ease, transform 240ms ease; }
+  .wild-list button[aria-pressed="true"] { color: var(--ink); transform: translateX(10px); }
+  .wild-list button:hover { color: var(--ink); }
+  .wild-note { margin-top: 28px; font-size: var(--step-body); }
+  .stage { grid-column: 5 / span 5; position: relative; padding-top: 48px; }
+  .block { position: absolute; inset: 0 -6% 12% -6%; background: var(--blk, var(--accent)); clip-path: var(--px-cut); --p: 16px; transition: background-color 240ms ease; }
+  .wild .screen { position: relative; padding: clamp(16px, 2vw, 24px); margin-top: -48px; }
+  .panel { display: none; }
+  .panel.on { display: block; animation: fade 240ms ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .panel .readout { margin: 14px 0; min-height: 3.2em; }
+  .wild-fact { grid-column: 10 / -1; align-self: end; padding-bottom: 8px; }
+  .wild-fact .big { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; margin-bottom: 20px; }
+
+  /* premonition */
+  .next { background: var(--screen); color: var(--screen-ink); margin-top: var(--gap); padding-block: var(--gap); }
+  .next h2 { color: #f1f7f2; grid-column: 1 / span 5; margin-bottom: 28px; }
+  .next .lead { grid-column: 1 / span 5; }
+  .next .lead p { color: var(--screen-ink); }
+  .next .hist { grid-column: 6 / -1; grid-row: 1 / span 3; }
+  .next .hist canvas { width: 100%; max-width: 620px; margin-left: auto; height: auto; image-rendering: pixelated; }
+  .next .last { grid-column: 1 / span 5; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; color: #f1f7f2; margin-top: 24px; }
+
+  /* footer: the series mark built from pixels */
+  footer { background: var(--surface); padding: 72px var(--m) 32px; }
+  .mark { width: 100%; height: auto; shape-rendering: crispEdges; }
+  .foot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; margin-top: 56px; font-size: var(--step-small); }
+  .foot div { grid-column: span 3; }
+  .foot h3 { font-size: var(--step-body); font-weight: 700; margin-bottom: 10px; letter-spacing: 0; }
+  .foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .foot .credits { grid-column: 1 / span 9; margin-top: 40px; max-width: 70ch; }
+  .last-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; font-size: var(--step-small); }
+
+  @media (max-width: 900px) {
+    .toy-text, .toy-screen, .law-text, .law-pic, .hook p, .hook-pic { grid-column: 1 / -1; }
+    .hook-pic { margin-top: 40px; }
+    .toy-screen { position: static; margin-top: 32px; }
+    .law-pic { max-width: 360px; margin-top: 24px; }
+    .tiles { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tiles h2 { grid-column: 1 / -1; grid-row: 1; padding: 0 0 20px; }
+    .t1 { grid-column: 1 / -1; grid-row: 2; height: auto; min-height: 120vw; }
+    .t2, .t3, .tiles .t2, .tiles .t3 { grid-column: span 1; grid-row: 3; height: auto; min-height: 80vw; margin-top: 0; padding: 18px; }
+    .t3 { margin-top: 32px; }
+    .t1 img { width: 40%; top: 4%; }
+    .t1 p { max-width: none; }
+    .t3 img { display: none; }
+    .t3 p { max-width: none; }
+    .grow-head, .g1, .g2, .g3 { grid-column: 1 / -1; grid-row: auto; }
+    .g1 .pix { height: 34vw; min-height: 0; } .g2 .pix { height: 46vw; min-height: 0; } .g3 .pix { height: 62vw; min-height: 0; }
+    .items { grid-template-columns: 1fr; }
+    .limits-intro { grid-column: 1 / -1; }
+    .wild-list, .stage, .wild-fact { grid-column: 1 / -1; }
+    .stage { order: -1; margin-bottom: 32px; padding-top: 32px; }
+    .block { inset: 0 0 12% 0; }
+    .wild-head { order: -2; }
+    .wild-list { flex-direction: row; flex-wrap: wrap; gap: 6px 22px; }
+    .wild-list h2 { display: none; }
+    .wild-list button { white-space: nowrap; font-size: 1.5rem; }
+    .wild-list button[aria-pressed="true"] { transform: none; }
+    .wild-head { display: block !important; }
+    .wild-fact { margin-top: 24px; }
+    .next h2, .next .lead, .next .hist, .next .last { grid-column: 1 / -1; grid-row: auto; }
+    .next .hist { margin: 24px 0; }
+    .foot div { grid-column: span 6; margin-bottom: 24px; }
+    .foot .credits { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 12vw; }
+    .bar .right { display: none; }
+    .folders { left: 0; right: 0; top: max(50%, 420px); }
+    .folder { inset: calc(var(--i) * 52px) 0 0 0; }
+    .folder .tab { height: 32px; width: 31%; }
+    .folder:nth-child(3n+1) .tab { left: 67%; } .folder:nth-child(3n+2) .tab { left: 34.5%; } .folder:nth-child(3n) .tab { left: 2%; }
+    .folder.front { padding: 24px var(--m); }
+    .folder.front .btn { width: 100%; justify-content: center; }
+    .hook p { font-size: 1.5rem; }
+  }
+  .wild-head { display: none; grid-column: 1 / -1; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <nav class="bar" aria-label="Site">
+    <a class="wordmark" href="#top" id="top"><svg class="sprite" width="20" height="20" viewBox="0 0 5 5" aria-hidden="true"><rect x="0" y="3" width="1" height="2" fill="#8dffa8"/><rect x="2" y="1" width="1" height="4" fill="#8dffa8"/><rect x="4" y="0" width="1" height="5" fill="#ff4d00"/></svg>Sample Space</a>
+    <a class="right" href="#series">About the series</a>
+  </nav>
+  <div class="hero-text">
+    <h1>The law of<br>large numbers</h1>
+    <p class="hero-sub">An interactive guide to the theorem that makes averages tell the truth. Flip coins, throw darts, spin roulette and train a model, and see why every poll, casino and neural network leans on it.</p>
+  </div>
+  <div class="folders">
+    <div class="folder" style="--i:0; --c:#2b322f; --t:var(--screen-ink); --x:78%"><a class="tab" href="#wild">In the wild</a></div>
+    <div class="folder" style="--i:1; --c:var(--muted); --t:#eef2ee; --x:58%"><a class="tab" href="#limits">Limits</a></div>
+    <div class="folder" style="--i:2; --c:var(--accent); --t:var(--ink); --x:39%"><a class="tab" href="#speed">Speed</a></div>
+    <div class="folder" style="--i:3; --c:var(--surface); --t:var(--ink); --x:20%"><a class="tab" href="#law">The law</a></div>
+    <div class="folder front" style="--i:4; --c:var(--bg); --t:var(--ink); --x:1%"><a class="tab" href="#toy">Intuition</a>
+      <a class="btn" href="#toy">Flip the coin</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hook grid" aria-label="The paradox">
+    <p class="rise">Every night someone leaves <span class="thumb"><img src="assets/monte-carlo-casino.jpg" alt="Monte Carlo casino, early 1900s" width="1920" height="1221"></span> Monte Carlo richer, yet the casino rarely has a losing year. One theorem explains both.</p>
+    <figure class="hook-pic rise"><div class="frame"><img src="assets/table-de-roulette-casino-de-monte-carlo.jpg" alt="Players around the roulette table in the Monte Carlo casino, engraving on an old postcard" width="1920" height="1226"></div><figcaption>The roulette table at Monte Carlo, on a postcard from about 1910.</figcaption></figure>
+  </section>
+
+  <section id="toy" class="grid">
+    <div class="toy-text">
+      <h2 class="rise">Flip a coin, a lot</h2>
+      <p class="rise">Flip a fair coin ten times and seven or more heads is unremarkable: it happens about one time in six. Flip it ten thousand times and seven thousand heads would be astonishing. The coin didn't change. Only the number of flips did.</p>
+      <p class="rise">Here is how it settles. Say you're unlucky and get 7 heads in the first 10. The coin has no memory, so the next 990 flips give about half heads, roughly 495.</p>
+      <table class="dilute rise">
+        <thead><tr><th scope="col">Flips</th><th scope="col">Heads</th><th scope="col">Average</th></tr></thead>
+        <tbody>
+          <tr><td>First 10</td><td>7</td><td>0.700</td></tr>
+          <tr><td>Next 990</td><td>about 495</td><td>0.500</td></tr>
+          <tr><td>All 1,000</td><td>about 502</td><td>0.502</td></tr>
+        </tbody>
+      </table>
+      <p class="rise"><span class="em">The two extra heads are never cancelled. They are diluted.</span> That is the whole trick, and it's why "tails is due" is wrong: the average settles by burying early luck under new data, not by correcting it.</p>
+      <p class="rise">Try it. Raise the flips and watch five independent runs squeeze into the shaded band, which narrows like 1/√n. Then switch to Cauchy samples, a distribution with no average at all, and watch the law give up.</p>
+    </div>
+    <div class="toy-screen screen rise" aria-label="Coin flip simulation">
+      <canvas id="coin" width="320" height="180" role="img" aria-label="Running averages of five coin-flip runs against the true value 0.5"></canvas>
+      <p class="readout" id="coin-out" aria-live="polite">Press flip to start.</p>
+      <div class="controls">
+        <label>Flips <input type="range" id="coin-n" min="1" max="5" step="0.5" value="4"> <output id="coin-nv" class="num">10,000</output></label>
+        <button class="btn" id="coin-go">Flip again</button>
+        <button class="btn quiet" id="coin-cauchy" aria-pressed="false">Cauchy samples</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="law" class="grid">
+    <div class="law-text">
+      <h2 class="rise">What it actually says</h2>
+      <p class="rise">Take independent samples X₁, X₂, …, Xₙ from the same distribution, whose true mean is μ. Their average gets as close to μ as you like, once n is large enough.</p>
+      <p class="eq rise">X̄ₙ = (X₁ + X₂ + ⋯ + Xₙ) / n &nbsp;→&nbsp; μ &nbsp; as n → ∞</p>
+      <p class="rise">It comes in two strengths. The <span class="em">weak law</span>: for any margin ε, the chance that the average misses μ by more than ε shrinks to zero. The <span class="em">strong law</span>: with probability one, the sequence of averages actually converges to μ and stays there.</p>
+      <h3 class="rise">The weak law, in four lines</h3>
+      <ol class="proof rise">
+        <li>Each sample has variance σ². Independent variances add, so the sum has variance nσ².</li>
+        <li>Dividing the sum by n divides its variance by n², so Var(X̄ₙ) = σ²/n.</li>
+        <li>Chebyshev's inequality: P(|X̄ₙ − μ| ≥ ε) ≤ Var(X̄ₙ)/ε² = σ²/(nε²).</li>
+        <li>The right side goes to 0 as n grows. That is the weak law.</li>
+      </ol>
+      <p class="rise">Notice what the proof leaned on: independence in line 1 and a finite σ² in line 3. Remove either and the guarantee goes with it. Sharper versions can drop the finite variance, but never the finite mean.</p>
+    </div>
+    <figure class="law-pic rise">
+      <div class="frame"><img src="assets/jakob-bernoulli.jpg" alt="Portrait of Jacob Bernoulli" width="1920" height="2244" loading="lazy"></div>
+      <figcaption>Jacob Bernoulli, painted by his brother Niklaus in 1687.</figcaption>
+    </figure>
+  </section>
+
+  <section id="history" class="tiles" aria-labelledby="history-h">
+    <h2 id="history-h" class="rise">Where it came from</h2>
+    <div class="tile t1 rise">
+      <span class="fig num">1713</span>
+      <img src="assets/arsconj.gif" alt="Title page of Ars Conjectandi, Basel, 1713" width="1920" height="1882" loading="lazy">
+      <p><span class="em">Ars Conjectandi</span> is published in Basel, eight years after Jacob Bernoulli's death. It holds the first proof that observed frequencies converge to the true probability: the bridge from "I saw heads 60% of the time" to "the chance of heads is 60%".</p>
+    </div>
+    <div class="tile t2 rise">
+      <span class="fig num">20 years</span>
+      <p>How long Bernoulli said he worked on it. He called it his golden theorem.</p>
+    </div>
+    <div class="tile t3 rise">
+      <span class="fig num">1837</span>
+      <img src="assets/poisson.jpg" alt="Portrait of Siméon Denis Poisson" width="1920" height="1725" loading="lazy">
+      <p>Siméon Denis Poisson names it <i>la loi des grands nombres</i>. The name sticks.</p>
+    </div>
+  </section>
+
+  <section id="speed" class="grid grow">
+    <div class="grow-head">
+      <h2 class="rise">Precision is expensive</h2>
+      <p class="rise">The typical error of an average is σ/√n, where σ is the spread of a single sample (0.5 for a coin). The square root is the price tag: to halve the error you need four times the data, and every extra decimal place costs a hundred times more.</p>
+      <p class="rise">So how large is large? Large enough that σ/√n is smaller than the error you can live with. Each pixel below is one flip, phosphor for heads.</p>
+    </div>
+    <div class="g g1 rise"><div class="pix"><canvas data-n="10" aria-label="100 flips as a 10 by 10 pixel grid" role="img"></canvas></div><div><h3>100 flips</h3><p>Typically within 5 points of 50%.</p></div></div>
+    <div class="g g2 rise"><div class="pix"><canvas data-n="100" aria-label="10,000 flips as a 100 by 100 pixel grid" role="img"></canvas></div><div><h3>10,000 flips</h3><p>Typically within half a point.</p></div></div>
+    <div class="g g3 rise"><div class="pix"><canvas data-n="1000" aria-label="One million flips as a 1000 by 1000 pixel grid" role="img"></canvas></div><div><h3>1,000,000 flips</h3><p>Typically within 0.05 points. A hundred times the flips of the middle tile, for one more decimal.</p></div></div>
+  </section>
+
+  <section id="limits" class="grid limits">
+    <div class="limits-intro">
+      <h2 class="rise">Read the small print</h2>
+      <p class="rise">Averaging removes noise. It never removes bias. Most real failures of the law are failures of its assumptions.</p>
+    </div>
+    <div class="cat rise"><h3>What it promises</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="coin" width="32" height="32" aria-hidden="true"></svg><div><div class="row">A biased coin is fine<span>→ 0.600</span></div><p>Fairness isn't required. A coin that lands heads 60% of the time averages to 0.6. The law finds whatever the true mean is.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="outlier" width="32" height="32" aria-hidden="true"></svg><div><div class="row">One outlier washes out<span>diluted</span></div><p>A single wild value is just one vote in a growing crowd. Given enough data, it is diluted exactly like the early heads.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="die" width="32" height="32" aria-hidden="true"></svg><div><div class="row">No memory needed<span>no debts</span></div><p>Past flips owe you nothing. Believing a streak must "balance out" is the gambler's fallacy.</p></div></li>
+    </ul>
+    <div class="cat rise"><h3>Where it breaks</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="spike" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Heavy tails<span>never settles</span></div><p>If extreme values keep coming often enough, no true average exists. The Cauchy distribution is the classic case; wealth, city sizes and viral posts are its real-world cousins.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="chain" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Dependent samples<span>overconfident</span></div><p>A million readings from one stuck sensor are one reading, a million times. Correlated data carries far less information than its count suggests.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="lens" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Biased sampling<span>wrong answer</span></div><p>Poll only your friends and a million answers converge, confidently, to your friends' opinion.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="calendar" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Distribution shift<span>stale answer</span></div><p>Train a model on 2020 and deploy it in 2026. The law held, for a world that no longer exists.</p></div></li>
+    </ul>
+  </section>
+
+  <section id="wild" class="grid wild" aria-labelledby="wild-h">
+    <h2 class="wild-head">Where it runs today</h2>
+    <div class="wild-list" role="group" aria-label="Real-world uses">
+      <h2 id="wild-h">Where it runs today</h2>
+      <button data-k="pi" aria-pressed="true">Monte Carlo π</button>
+      <button data-k="sgd" aria-pressed="false">Mini-batch SGD</button>
+      <button data-k="house" aria-pressed="false">The house edge</button>
+      <button data-k="ab" aria-pressed="false">A/B tests</button>
+      <p class="wild-note">Training a model is the same bet: we can't measure its error on every possible input, so we minimise the average error on samples and trust the law that the two are close. That is empirical risk minimisation, and it works only while the samples look like the world.</p>
+    </div>
+    <div class="stage">
+      <div class="block" aria-hidden="true"></div>
+      <div class="screen">
+        <div class="panel on" data-k="pi">
+          <canvas id="pi" width="200" height="200" role="img" aria-label="Random darts in a square; those inside the quarter circle are bright"></canvas>
+          <p class="readout" id="pi-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="pi-100">Throw 100</button><button class="btn quiet" id="pi-10k">Throw 10,000</button><button class="btn quiet" id="pi-reset">Reset</button></div>
+        </div>
+        <div class="panel" data-k="sgd">
+          <canvas id="sgd" width="240" height="200" role="img" aria-label="Cloud of mini-batch gradient estimates around the true gradient"></canvas>
+          <p class="readout" id="sgd-out" aria-live="polite"></p>
+          <div class="controls"><label>Batch size <input type="range" id="sgd-b" min="0" max="10" step="1" value="3"> <output id="sgd-bv" class="num">8</output></label></div>
+        </div>
+        <div class="panel" data-k="house">
+          <canvas id="house" width="240" height="200" role="img" aria-label="The casino's average take per bet converging to 2.7 percent, with individual players' nights swinging wildly"></canvas>
+          <p class="readout" id="house-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="house-go">Open the doors again</button></div>
+        </div>
+        <div class="panel" data-k="ab">
+          <canvas id="ab" width="240" height="200" role="img" aria-label="Two conversion-rate estimates crossing early and separating later"></canvas>
+          <p class="readout" id="ab-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="ab-go">Run the test again</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="wild-fact" aria-live="polite">
+      <p class="big" id="fact-big"></p>
+      <p id="fact-text"></p>
+    </div>
+  </section>
+
+  <section class="next grid" aria-labelledby="next-h">
+    <h2 id="next-h">Look at how they miss</h2>
+    <div class="lead">
+      <p>Each experiment below is 100 coin flips. Each pixel is one experiment's final average, dropped into its column. The averages arrive near 0.5, as promised. Now watch the misses pile up.</p>
+      <button class="btn" id="hist-go">Run 500 more</button>
+    </div>
+    <div class="hist"><canvas id="hist" width="205" height="150" role="img" aria-label="Pixel stacks of 500 experiment averages between 0.30 and 0.70"></canvas></div>
+    <div class="lead"><p>Coins, darts, gradients, roulette: average anything and the misses stack into this same shape.</p></div>
+    <p class="last">Why that shape, every time? That's the next issue.</p>
+  </section>
+</main>
+
+<footer id="series">
+  <svg class="mark" id="mark" role="img" aria-label="Sample Space"></svg>
+  <div class="foot">
+    <div><h3>This issue</h3><ul><li><a href="#toy">Intuition</a></li><li><a href="#law">The law</a></li><li><a href="#speed">Speed</a></li><li><a href="#limits">Limits</a></li><li><a href="#wild">In the wild</a></li></ul></div>
+    <div><h3>Read further</h3><ul><li><a href="https://en.wikipedia.org/wiki/Law_of_large_numbers">Law of large numbers</a></li><li><a href="https://en.wikipedia.org/wiki/Ars_Conjectandi">Ars Conjectandi</a></li><li><a href="https://en.wikipedia.org/wiki/Chebyshev%27s_inequality">Chebyshev's inequality</a></li></ul></div>
+    <div><h3>The series</h3><ul><li>Sample Space explains one idea from maths, statistics or machine learning per issue, with simulations you can play with.</li><li><a href="docs/THEME.md">How it's designed</a></li></ul></div>
+    <div><h3>Code</h3><ul><li>One HTML file, one stylesheet, one script. No dependencies.</li></ul></div>
+    <p class="credits">Pictures: <a href="https://commons.wikimedia.org/wiki/File:Jakob_Bernoulli.jpg">“Jakob Bernoulli”</a> by Niklaus Bernoulli (1662–1716), <a href="https://creativecommons.org/publicdomain/mark/1.0/">public domain</a>, via Wikimedia Commons; <a href="https://commons.wikimedia.org/wiki/File:Arsconj.gif">“Arsconj”</a> by Jakob Bernoulli, public domain, via Wikimedia Commons; <a href="https://commons.wikimedia.org/wiki/File:Table_de_Roulette,_Casino_de_Monte_Carlo_(Carte_Postale_Ancienne).jpg">“Table de Roulette, Casino de Monte Carlo”</a> by Neurdein Frères, public domain, via Wikimedia Commons; <a href="https://commons.wikimedia.org/wiki/File:Monte_Carlo_-_Casino.jpg">“Monte Carlo – Casino”</a>, public domain, via Wikimedia Commons; <a href="https://commons.wikimedia.org/wiki/File:Simeon_Poisson_(cropped).jpg">“Poisson”</a> by François-Séraphin Delpech after Nicolas Eustache Maurin, public domain, via Wikimedia Commons.</p>
+  </div>
+  <div class="last-row"><span>© 2026 Sample Space</span><a class="btn" href="#top">Back to top</a></div>
+</footer>
+
+<script src="demos.js"></script>
+</body>
+</html>
