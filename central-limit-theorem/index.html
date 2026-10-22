@@ -84,7 +84,8 @@
   .tile { position: relative; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; clip-path: var(--px-cut); overflow: hidden; }
   .tile .fig { font-size: var(--step-head); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
   .tile p { margin: 0; max-width: 34ch; }
-  .t1 { grid-column: 1 / span 6; grid-row: 1 / span 2; min-height: 60vh; background: var(--accent); color: var(--ink); }
+  .t1 { grid-column: 1 / span 6; grid-row: 1 / span 2; min-height: 70vh; background: var(--accent); color: var(--ink); }
+  .t1 img { width: 100%; mix-blend-mode: multiply; filter: grayscale(1) contrast(1.2); }
   .t2 { grid-column: 7 / span 3; grid-row: 1; min-height: 40vh; margin-top: 14vh; background: var(--ink); color: #eef2ee; }
   .t3 { grid-column: 10 / span 3; grid-row: 1; min-height: 34vh; margin-top: 26vh; background: var(--surface); }
 
@@ -139,6 +140,7 @@
   .foot div { grid-column: span 3; }
   .foot h3 { font-size: var(--step-body); font-weight: 700; margin-bottom: 10px; letter-spacing: 0; }
   .foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .foot .credits { grid-column: 1 / span 9; margin-top: 40px; max-width: 70ch; }
   .last-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; font-size: var(--step-small); }
 
   @media (max-width: 900px) {
@@ -147,8 +149,7 @@
     .law-side { margin-top: 32px; }
     .tiles { grid-template-columns: 1fr 1fr; gap: 6px; }
     .tiles h2 { grid-column: 1 / -1; grid-row: 1; padding: 0 0 20px; }
-    .t1 { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
-    .t2, .t3 { grid-column: span 1; grid-row: 3; min-height: 0; margin-top: 0; padding: 18px; }
+    .t1 { grid-column: 1 / -1; grid-row: 2; min-height: 0; }    .t2, .t3 { grid-column: span 1; grid-row: 3; min-height: 0; margin-top: 0; padding: 18px; }
     .items { grid-template-columns: 1fr; }
     .limits-intro { grid-column: 1 / -1; }
     .wild-list, .stage, .wild-fact { grid-column: 1 / -1; }
@@ -308,7 +309,8 @@
     <h2 id="history-h" class="rise">Where it came from</h2>
     <div class="tile t1 rise">
       <span class="fig num">1733</span>
-      <p>Abraham de Moivre, a French mathematician who made part of his living answering gamblers' questions in London, notices that the number of heads in many coin flips follows a bell-shaped curve. It saves him from adding up enormous lists of numbers. Around 1810, Pierre-Simon Laplace shows the same hill appears for far more than coins.</p>
+      <img src="assets/galton-quincunx.png" alt="Francis Galton's 1889 drawing of his quincunx: balls fall through rows of pegs and pile up in a hill" width="744" height="577" loading="lazy">
+      <p>Abraham de Moivre, a French mathematician who made part of his living answering gamblers' questions in London, notices that the number of heads in many coin flips follows a bell-shaped curve. It saves him from adding up enormous lists of numbers. Around 1810, Pierre-Simon Laplace shows the same hill appears for far more than coins. In 1889, Francis Galton draws it as a board of pegs, where falling balls build the hill (above, left panel).</p>
     </div>
     <div class="tile t2 rise">
       <span class="fig num">1901</span>
@@ -450,7 +452,8 @@
     <div><h3>This issue</h3><ul><li><a href="#toy">Intuition</a></li><li><a href="#law">The theorem</a></li><li><a href="#speed">Speed</a></li><li><a href="#limits">Limits</a></li><li><a href="#build">Build it</a></li><li><a href="#wild">In the wild</a></li></ul></div>
     <div><h3>Read further</h3><ul><li><a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central limit theorem</a></li><li><a href="https://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem">De Moivre–Laplace theorem</a></li><li><a href="https://en.wikipedia.org/wiki/Galton_board">Galton board</a></li><li><a href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a></li></ul></div>
     <div><h3>The series</h3><ul><li>Sample Space explains one idea from maths, statistics or machine learning per issue, with simulations you can play with.</li><li><a href="docs/THEME.md">How it's designed</a></li></ul></div>
-    <div><h3>Code</h3><ul><li>One HTML file, one stylesheet, one script. No dependencies. Every figure is drawn by the page.</li></ul></div>
+    <div><h3>Code</h3><ul><li>One HTML file, one stylesheet, one script. No dependencies. Every chart is drawn by the page.</li></ul></div>
+    <p class="credits">Picture: <a href="https://commons.wikimedia.org/wiki/File:Quincunx_(Galton_Box)_-_Galton_1889_diagram.png">“Quincunx (Galton Box) – Galton 1889 diagram”</a> by Francis Galton, from <i>Natural Inheritance</i> (1889), public domain, via Wikimedia Commons.</p>
   </div>
   <div class="last-row"><span>© 2026 Sample Space</span><a class="btn" href="#top">Back to top</a></div>
 </footer>

@@ -20,6 +20,7 @@
   .card { display: flex; flex-direction: column; background: var(--surface); clip-path: var(--px-cut); text-decoration: none; transition: transform 200ms ease, background-color 200ms ease; }
   a.card:hover { transform: translateY(-3px); background: #c1c4bb; }
   .card img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .card img.ink { mix-blend-mode: multiply; filter: grayscale(1) contrast(1.1); object-position: 50% 100%; } /* line drawings: paper turns card grey */
   .card .body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .meta { font-size: var(--step-small); color: var(--muted); }
   .card h3 { font-size: var(--step-lead); }
@@ -53,8 +54,8 @@
         <span class="go">Read and play →</span>
       </div>
     </a>
-    <a class="card dark" href="central-limit-theorem/">
-      <div class="pile" aria-hidden="true"><svg viewBox="0 0 11 8" shape-rendering="crispEdges" preserveAspectRatio="xMidYMax meet"><g fill="#8dffa8"><rect x="0" y="7" width="1" height="1"/><rect x="1" y="6" width="1" height="2"/><rect x="2" y="5" width="1" height="3"/><rect x="3" y="3" width="1" height="5"/><rect x="4" y="1" width="1" height="7"/><rect x="5" y="0" width="1" height="8"/><rect x="6" y="1" width="1" height="7"/><rect x="7" y="3" width="1" height="5"/><rect x="8" y="5" width="1" height="3"/><rect x="9" y="6" width="1" height="2"/><rect x="10" y="7" width="1" height="1"/></g></svg></div>
+    <a class="card" href="central-limit-theorem/">
+      <img class="ink" src="thumbs/central-limit-theorem.png" alt="Francis Galton's 1889 drawing of balls falling through pegs into a hill" width="744" height="577">
       <div class="body">
         <span class="meta">Issue 2 · Statistics, ML · October 2026</span>
         <h3>The central limit theorem</h3>
