@@ -1,0 +1,92 @@
+/* Sample Space — series theme. One pixel is one sample. See docs/THEME.md. */
+:root {
+  --bg: #d8dad3;
+  --surface: #c9ccc3;
+  --ink: #121417;
+  --muted: #454a50;
+  --accent: #ff4d00;
+  --accent-ink: #121417;
+  --screen: #0e1211;
+  --screen-2: #1b211f;
+  --phosphor: #8dffa8;
+  --screen-ink: #d3e6da;
+
+  --step-small: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.375rem, 1.15rem + 0.8vw, 2rem);
+  --step-head: clamp(2.25rem, 1.4rem + 3.4vw, 4.25rem);
+  --step-display: clamp(3rem, 8vw, 8.5rem);
+
+  --m: clamp(16px, 2.5vw, 32px);
+  --gap: clamp(120px, 14vw, 200px);
+  --p: 8px; /* one pixel of the motif */
+
+  /* stepped "pixel" corners: two steps of --p on every corner */
+  --px-cut: polygon(
+    0 calc(var(--p) * 2), var(--p) calc(var(--p) * 2), var(--p) var(--p), calc(var(--p) * 2) var(--p), calc(var(--p) * 2) 0,
+    calc(100% - var(--p) * 2) 0, calc(100% - var(--p) * 2) var(--p), calc(100% - var(--p)) var(--p), calc(100% - var(--p)) calc(var(--p) * 2), 100% calc(var(--p) * 2),
+    100% calc(100% - var(--p) * 2), calc(100% - var(--p)) calc(100% - var(--p) * 2), calc(100% - var(--p)) calc(100% - var(--p)), calc(100% - var(--p) * 2) calc(100% - var(--p)), calc(100% - var(--p) * 2) 100%,
+    calc(var(--p) * 2) 100%, calc(var(--p) * 2) calc(100% - var(--p)), var(--p) calc(100% - var(--p)), var(--p) calc(100% - var(--p) * 2), 0 calc(100% - var(--p) * 2));
+  /* folder tab: rises in three pixel steps on each side */
+  --px-tab: polygon(0 100%, 0 66%, 8% 66%, 8% 33%, 16% 33%, 16% 0, 84% 0, 84% 33%, 92% 33%, 92% 66%, 100% 66%, 100% 100%);
+  /* top corners only, for buttons and folders */
+  --px-top: polygon(0 100%, 0 calc(var(--p) * 2), var(--p) calc(var(--p) * 2), var(--p) var(--p), calc(var(--p) * 2) var(--p), calc(var(--p) * 2) 0,
+    calc(100% - var(--p) * 2) 0, calc(100% - var(--p) * 2) var(--p), calc(100% - var(--p)) var(--p), calc(100% - var(--p)) calc(var(--p) * 2), 100% calc(var(--p) * 2), 100% 100%);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: var(--step-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg, canvas { display: block; max-width: 100%; }
+h1, h2, h3 { font-weight: 500; letter-spacing: -0.03em; line-height: 1.02; margin: 0; text-wrap: balance; }
+h2 { font-size: var(--step-head); }
+h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+p { margin: 0 0 1em; max-width: 60ch; }
+a { color: inherit; text-underline-offset: 0.18em; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { padding-inline: var(--m); }
+
+/* the one button: a flat signal-orange block with pixel corners */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5em;
+  font: inherit; font-weight: 500; font-size: var(--step-body);
+  color: var(--accent-ink); background: var(--accent);
+  border: 0; padding: 0.8em 1.4em; cursor: pointer; text-decoration: none;
+  clip-path: var(--px-cut);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+.btn:hover { background: #ff6a29; }
+.btn:active { transform: translateY(2px); }
+.btn.quiet { background: var(--screen-2); color: var(--screen-ink); }
+.btn.quiet:hover { background: #2a322f; }
+.btn.quiet[aria-pressed="true"] { background: var(--phosphor); color: var(--screen); }
+
+/* screens: every demo lives on one */
+.screen { background: var(--screen); color: var(--screen-ink); clip-path: var(--px-cut); }
+.screen canvas { width: 100%; height: auto; image-rendering: pixelated; }
+.readout { font-variant-numeric: tabular-nums; color: var(--screen-ink); font-size: var(--step-small); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls label { display: flex; align-items: center; gap: 10px; font-size: var(--step-small); }
+input[type="range"] { accent-color: var(--accent); width: min(260px, 60vw); }
+
+/* pixel sprites */
+.sprite { shape-rendering: crispEdges; flex: none; }
+
+/* entrances: content is visible unless the script opts in */
+.js .rise { opacity: 0; transform: translateY(24px); transition: opacity 600ms ease, transform 600ms cubic-bezier(.2,.7,.2,1); }
+.js .rise.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .rise { opacity: 1; transform: none; transition: none; }
+  * { transition-duration: 0ms !important; animation: none !important; }
+}

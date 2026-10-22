@@ -25,11 +25,12 @@
   .card h3 { font-size: var(--step-lead); }
   .card p { margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .card .go { margin-top: auto; padding-top: 6px; font-weight: 500; }
-  .card.soon { background: var(--screen); color: var(--screen-ink); }
-  .card.soon .meta { color: var(--screen-ink); }
-  .card.soon h3 { color: #f1f7f2; }
-  .soon .pile { aspect-ratio: 16 / 9; display: grid; place-items: end center; padding: 8% 12% 6%; }
-  .soon .pile svg { width: 100%; height: 100%; }
+  .card.dark { background: var(--screen); color: var(--screen-ink); }
+  a.card.dark:hover { background: #1b211f; }
+  .card.dark .meta { color: var(--screen-ink); }
+  .card.dark h3 { color: #f1f7f2; }
+  .pile { aspect-ratio: 16 / 9; display: grid; place-items: end center; padding: 8% 12% 6%; }
+  .pile svg { width: 100%; height: 100%; }
   footer { background: var(--surface); padding: 24px var(--m); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: var(--step-small); }
   @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
 </style>
@@ -52,12 +53,21 @@
         <span class="go">Read and play →</span>
       </div>
     </a>
-    <div class="card soon" aria-label="Next issue, coming soon">
+    <a class="card dark" href="central-limit-theorem/">
       <div class="pile" aria-hidden="true"><svg viewBox="0 0 11 8" shape-rendering="crispEdges" preserveAspectRatio="xMidYMax meet"><g fill="#8dffa8"><rect x="0" y="7" width="1" height="1"/><rect x="1" y="6" width="1" height="2"/><rect x="2" y="5" width="1" height="3"/><rect x="3" y="3" width="1" height="5"/><rect x="4" y="1" width="1" height="7"/><rect x="5" y="0" width="1" height="8"/><rect x="6" y="1" width="1" height="7"/><rect x="7" y="3" width="1" height="5"/><rect x="8" y="5" width="1" height="3"/><rect x="9" y="6" width="1" height="2"/><rect x="10" y="7" width="1" height="1"/></g></svg></div>
       <div class="body">
-        <span class="meta">Issue 2 · Coming soon</span>
-        <h3>The shape of the miss</h3>
-        <p>The averages always arrive. Next, why they miss in the same shape every time.</p>
+        <span class="meta">Issue 2 · Statistics, ML · October 2026</span>
+        <h3>The central limit theorem</h3>
+        <p>Why 1,000 voters can speak for a whole country, why every average piles up into the same hill, and how to build a margin of error yourself.</p>
+        <span class="go">Read and play →</span>
+      </div>
+    </a>
+    <div class="card dark" aria-label="Next issue, coming soon">
+      <div class="pile" aria-hidden="true"><svg viewBox="0 0 11 8" shape-rendering="crispEdges" preserveAspectRatio="xMidYMax meet"><g fill="#8dffa8"><rect x="0" y="6" width="3" height="1"/><rect x="4" y="6" width="3" height="1"/><rect x="8" y="6" width="3" height="1"/></g><rect x="5" y="4" width="1" height="2" fill="#ff4d00"/></svg></div>
+      <div class="body">
+        <span class="meta">Issue 3 · Coming soon</span>
+        <h3>A frog that remembers</h3>
+        <p>What happens to randomness when each step remembers the last one?</p>
       </div>
     </div>
   </div>

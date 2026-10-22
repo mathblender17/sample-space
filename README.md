@@ -6,6 +6,7 @@ Live at **https://mathblender17.github.io/sample-space/**
 | Issue | Folder |
 |---|---|
 | The law of large numbers | [`law-of-large-numbers/`](law-of-large-numbers/) |
+| The central limit theorem | [`central-limit-theorem/`](central-limit-theorem/) |
 
 ## How this repo works
 - Each issue is written in its own local folder with its own git repo, e.g. `WriteUps/Law of large numbers`.

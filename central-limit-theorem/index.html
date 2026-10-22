@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Central Limit Theorem · Sample Space</title>
+<meta name="description" content="An interactive guide to the Central Limit Theorem: why 1,000 voters can speak for a whole country, why averages always pile up into a bell, and how to build a margin of error yourself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ---------- hero: a stack of file folders on the screen ---------- */
+  .hero { position: relative; min-height: max(100svh, 780px); background: var(--screen); color: var(--screen-ink); overflow: hidden; }
+  .bar { position: relative; display: flex; justify-content: center; align-items: center; padding: 22px var(--m); font-size: var(--step-small); }
+  .wordmark { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: var(--step-body); }
+  .bar .right { position: absolute; right: var(--m); }
+  .hero-text { text-align: center; padding: clamp(40px, 6vh, 72px) var(--m) 0; }
+  .hero h1 { font-size: var(--step-display); line-height: 0.95; letter-spacing: -0.045em; color: #f1f7f2; }
+  .hero-sub { font-size: var(--step-body); max-width: 50ch; margin: 28px auto 0; color: var(--screen-ink); }
+  .folders { position: absolute; left: 7%; right: 7%; top: max(54%, 450px); bottom: 0; }
+  .folder { position: absolute; inset: calc(var(--i) * 54px) 0 0 0; background: var(--c); color: var(--t); }
+  .folder .tab { position: absolute; bottom: 100%; left: var(--x); width: clamp(120px, 15%, 200px); height: 40px; background: var(--c); color: var(--t);
+    clip-path: var(--px-tab); display: flex; align-items: center; justify-content: center; font-size: var(--step-small); font-weight: 500; text-decoration: none;
+    padding-top: 8px; transition: transform 160ms ease; }
+  .folder .tab:hover { transform: translateY(-4px); }
+  .folder.front { padding: 32px; }
+
+  /* ---------- sections ---------- */
+  section { padding-block: var(--gap) 0; }
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); padding-inline: var(--m); }
+  .em { font-weight: 700; }
+
+  /* hook: the poll, as a screen */
+  .hook { padding-block: clamp(96px, 16vh, 180px) clamp(40px, 6vh, 80px); align-items: center; row-gap: 32px; }
+  .hook .big { grid-column: 1 / span 6; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; letter-spacing: -0.015em; max-width: 34ch; margin: 0; }
+  .hook .more { grid-column: 1 / span 6; margin: 0; }
+  .hook-pic { grid-column: 8 / -1; grid-row: 1 / span 2; margin: 0; }
+  .poll { padding: clamp(18px, 2vw, 28px); }
+  .poll-h { font-size: var(--step-small); margin: 0 0 18px; color: var(--screen-ink); }
+  .pr { display: grid; grid-template-columns: 5.5em 1fr 4.5em; gap: 14px; align-items: center; margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+  .pr .track { position: relative; height: 16px; background: var(--screen-2); }
+  /* the bar spans 0–50%, so --v percent is --v × 2 of the track */
+  .pr i { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v) * 2%); background: var(--phosphor); }
+  .pr u { position: absolute; top: -4px; bottom: -4px; left: calc((var(--v) - 3) * 2%); width: 12%; border-inline: 2px solid var(--accent); }
+  .pr b { font-weight: 500; text-align: right; }
+  figcaption { font-size: var(--step-small); color: var(--muted); margin-top: 12px; }
+
+  /* text + sticky screen (toy, machine, build) */
+  .side-text { grid-column: 1 / span 5; }
+  .side-text h2 { margin-bottom: 32px; }
+  .side-screen { grid-column: 6 / -1; padding: clamp(16px, 2vw, 28px); align-self: start; position: sticky; top: 24px; }
+  .side-screen .readout { margin: 16px 0; min-height: 3.2em; }
+  .side-screen canvas + canvas { margin-top: 10px; }
+  .axis { display: flex; justify-content: space-between; font-size: var(--step-small); color: var(--screen-ink); font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .tag { font-size: var(--step-small); color: var(--screen-ink); margin: 0 0 6px; }
+  .tag + canvas, canvas + .tag { margin-top: 0; }
+  canvas + .tag { margin-top: 12px; }
+  table.dilute { border-collapse: collapse; margin: 8px 0 28px; font-variant-numeric: tabular-nums; width: 100%; max-width: 30rem; }
+  .dilute th, .dilute td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 2px solid var(--surface); }
+  .dilute th { font-weight: 500; color: var(--muted); font-size: var(--step-small); }
+  .dilute tr:last-child td { border-bottom: 0; }
+  .dilute .hi td { font-weight: 700; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* the statement */
+  .law-text { grid-column: 1 / span 7; }
+  .law-text h2 { margin-bottom: 32px; }
+  .eq { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; background: var(--surface); padding: 24px 28px; clip-path: var(--px-cut); max-width: none; margin: 8px 0 32px; }
+  .parts { padding-left: 1.3em; margin: 16px 0 28px; max-width: 64ch; }
+  .parts li { margin-bottom: 12px; padding-left: 4px; }
+  details { background: var(--surface); clip-path: var(--px-cut); padding: 20px 28px; margin-top: 32px; max-width: 64ch; }
+  summary { cursor: pointer; font-weight: 500; }
+  details[open] summary { margin-bottom: 16px; }
+  .law-side { grid-column: 9 / -1; align-self: start; background: var(--ink); color: #eef2ee; clip-path: var(--px-cut); padding: 28px; }
+  .law-side h3 { margin-bottom: 20px; }
+  .law-side ol { padding-left: 1.2em; margin: 0; }
+  .law-side li { margin-bottom: 14px; }
+
+  /* history: stepped tiles */
+  .tiles { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; padding-inline: var(--m); align-items: start; }
+  .tiles h2 { grid-column: 7 / span 6; grid-row: 1; font-size: var(--step-lead); align-self: start; padding-top: 2vh; }
+  .tile { position: relative; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; clip-path: var(--px-cut); overflow: hidden; }
+  .tile .fig { font-size: var(--step-head); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .tile p { margin: 0; max-width: 34ch; }
+  .t1 { grid-column: 1 / span 6; grid-row: 1 / span 2; min-height: 60vh; background: var(--accent); color: var(--ink); }
+  .t2 { grid-column: 7 / span 3; grid-row: 1; min-height: 40vh; margin-top: 14vh; background: var(--ink); color: #eef2ee; }
+  .t3 { grid-column: 10 / span 3; grid-row: 1; min-height: 34vh; margin-top: 26vh; background: var(--surface); }
+
+  /* limits: two-column list with sprite bullets */
+  .limits .cat { grid-column: 1 / -1; padding-top: 96px; margin-bottom: 40px; }
+  .limits .cat:first-of-type { padding-top: 0; }
+  .limits .cat h3 { font-size: var(--step-head); letter-spacing: -0.03em; }
+  .items { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; row-gap: 40px; list-style: none; padding: 0; margin: 0; }
+  .items li { display: flex; gap: 20px; }
+  .items .row { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
+  .items .row span { font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .items p { margin: 6px 0 0; max-width: 46ch; }
+  .limits-intro { grid-column: 1 / span 8; margin-bottom: 72px; }
+  .limits-intro h2 { margin-bottom: 24px; }
+
+  /* build it: the code the page runs */
+  .code { background: var(--screen); color: var(--screen-ink); clip-path: var(--px-cut); padding: 24px 28px; margin: 8px 0 28px; overflow-x: auto; font-size: var(--step-small); line-height: 1.6; }
+  .code code { font-family: inherit; white-space: pre; }
+
+  /* in the wild: one screen on a big pixel block, swapped from a list */
+  .wild { position: relative; }
+  .wild-list { grid-column: 1 / span 4; align-self: end; display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; }
+  .wild-list h2, .wild-list button { font-size: clamp(1.75rem, 1.2rem + 1.7vw, 2.75rem); line-height: 1.15; letter-spacing: -0.03em; }
+  .wild-list h2 { color: var(--muted); margin-bottom: 4px; }
+  .wild-list button { font-family: inherit; font-weight: 500; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--muted); transition: color 240ms ease, transform 240ms ease; }
+  .wild-list button[aria-pressed="true"] { color: var(--ink); transform: translateX(10px); }
+  .wild-list button:hover { color: var(--ink); }
+  .stage { grid-column: 5 / span 5; position: relative; padding-top: 48px; }
+  .block { position: absolute; inset: 0 -6% 12% -6%; background: var(--blk, var(--accent)); clip-path: var(--px-cut); --p: 16px; transition: background-color 240ms ease; }
+  .wild .screen { position: relative; padding: clamp(16px, 2vw, 24px); margin-top: -48px; }
+  .panel { display: none; }
+  .panel.on { display: block; animation: fade 240ms ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .panel .readout { margin: 14px 0; min-height: 3.2em; }
+  .wild-fact { grid-column: 10 / -1; align-self: end; padding-bottom: 8px; }
+  .wild-fact .big { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; margin-bottom: 20px; }
+  .wild-head { display: none; grid-column: 1 / -1; margin-bottom: 24px; }
+
+  /* premonition */
+  .next { background: var(--screen); color: var(--screen-ink); margin-top: var(--gap); padding-block: var(--gap); }
+  .next h2 { color: #f1f7f2; grid-column: 1 / span 5; margin-bottom: 28px; }
+  .next .lead { grid-column: 1 / span 5; }
+  .next .lead p { color: var(--screen-ink); }
+  .next .hist { grid-column: 7 / -1; grid-row: 1 / span 3; }
+  .next .hist canvas { width: 100%; max-width: 620px; height: auto; image-rendering: pixelated; }
+  .next .last { grid-column: 1 / span 5; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; color: #f1f7f2; margin-top: 24px; }
+
+  /* footer: the series mark built from pixels */
+  footer { background: var(--surface); padding: 72px var(--m) 32px; }
+  .mark { width: 100%; height: auto; shape-rendering: crispEdges; }
+  .foot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; margin-top: 56px; font-size: var(--step-small); }
+  .foot div { grid-column: span 3; }
+  .foot h3 { font-size: var(--step-body); font-weight: 700; margin-bottom: 10px; letter-spacing: 0; }
+  .foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .last-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; font-size: var(--step-small); }
+
+  @media (max-width: 900px) {
+    .hook .big, .hook .more, .hook-pic, .side-text, .side-screen, .law-text, .law-side { grid-column: 1 / -1; grid-row: auto; }
+    .side-screen { position: static; margin-top: 32px; }
+    .law-side { margin-top: 32px; }
+    .tiles { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tiles h2 { grid-column: 1 / -1; grid-row: 1; padding: 0 0 20px; }
+    .t1 { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
+    .t2, .t3 { grid-column: span 1; grid-row: 3; min-height: 0; margin-top: 0; padding: 18px; }
+    .items { grid-template-columns: 1fr; }
+    .limits-intro { grid-column: 1 / -1; }
+    .wild-list, .stage, .wild-fact { grid-column: 1 / -1; }
+    .stage { order: -1; margin-bottom: 32px; padding-top: 32px; }
+    .block { inset: 0 0 12% 0; }
+    .wild-head { display: block; order: -2; }
+    .wild-list { flex-direction: row; flex-wrap: wrap; gap: 6px 22px; }
+    .wild-list h2 { display: none; }
+    .wild-list button { white-space: nowrap; font-size: 1.5rem; }
+    .wild-list button[aria-pressed="true"] { transform: none; }
+    .wild-fact { margin-top: 24px; }
+    .next h2, .next .lead, .next .hist, .next .last { grid-column: 1 / -1; grid-row: auto; }
+    .next .hist { margin: 24px 0; }
+    .foot div { grid-column: span 6; margin-bottom: 24px; }
+  }
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 12vw; }
+    .bar .right { display: none; }
+    .folders { left: 0; right: 0; top: max(50%, 420px); }
+    .folder { inset: calc(var(--i) * 46px) 0 0 0; }
+    .folder .tab { height: 32px; width: 31%; }
+    .folder:nth-child(3n+1) .tab { left: 67%; } .folder:nth-child(3n+2) .tab { left: 34.5%; } .folder:nth-child(3n) .tab { left: 2%; }
+    .folder.front { padding: 24px var(--m); }
+    .folder.front .btn { width: 100%; justify-content: center; }
+    .hook .big { font-size: 1.5rem; }
+    .pr { grid-template-columns: 4.5em 1fr 4em; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <nav class="bar" aria-label="Site">
+    <a class="wordmark" href="#top" id="top"><svg class="sprite" width="20" height="20" viewBox="0 0 5 5" aria-hidden="true"><rect x="0" y="3" width="1" height="2" fill="#8dffa8"/><rect x="2" y="1" width="1" height="4" fill="#8dffa8"/><rect x="4" y="0" width="1" height="5" fill="#ff4d00"/></svg>Sample Space</a>
+    <a class="right" href="#series">About the series</a>
+  </nav>
+  <div class="hero-text">
+    <h1>The central<br>limit theorem</h1>
+    <p class="hero-sub">Why 1,000 people can speak for a whole country. Throw coins, draw your own randomness, build a margin of error in a few lines of code, and see why every average piles up into the same hill.</p>
+  </div>
+  <div class="folders">
+    <div class="folder" style="--i:0; --c:#2b322f; --t:var(--screen-ink); --x:84%"><a class="tab" href="#wild">In the wild</a></div>
+    <div class="folder" style="--i:1; --c:var(--phosphor); --t:var(--screen); --x:67.5%"><a class="tab" href="#build">Build it</a></div>
+    <div class="folder" style="--i:2; --c:var(--muted); --t:#eef2ee; --x:51%"><a class="tab" href="#limits">Limits</a></div>
+    <div class="folder" style="--i:3; --c:var(--accent); --t:var(--ink); --x:34.5%"><a class="tab" href="#speed">Speed</a></div>
+    <div class="folder" style="--i:4; --c:var(--surface); --t:var(--ink); --x:18%"><a class="tab" href="#law">The theorem</a></div>
+    <div class="folder front" style="--i:5; --c:var(--bg); --t:var(--ink); --x:1.5%"><a class="tab" href="#toy">Intuition</a>
+      <a class="btn" href="#toy">Throw the coins</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hook grid" aria-label="The puzzle">
+    <p class="big rise">A news channel asks 1,000 people how they will vote, in a country of 90 crore voters, and says: Party A, 42%, give or take 3. How can 1,000 people speak for 90 crore?</p>
+    <div class="more rise">
+      <p>Stranger still, it would be the same "give or take 3" for a country of 1 crore. Think of tasting a spoonful of dal: if the pot is well stirred, one spoonful tells you the salt of the whole pot, whether it's a small pot or a wedding pot. What matters is the size of the spoon, not the pot.</p>
+      <p>Last issue ended with a puzzle: average anything, many times over, and the misses always pile up in the same hill shape. This issue is about that hill. It is the reason the "±3" exists.</p>
+    </div>
+    <figure class="hook-pic rise">
+      <div class="screen poll" role="img" aria-label="A made-up poll: Party A 42%, Party B 37%, others 21%, each give or take 3 points">
+        <p class="poll-h">Poll · 1,000 voters asked</p>
+        <div class="pr"><span>Party A</span><div class="track"><i style="--v:42"></i><u style="--v:42"></u></div><b>42% ±3</b></div>
+        <div class="pr"><span>Party B</span><div class="track"><i style="--v:37"></i><u style="--v:37"></u></div><b>37% ±3</b></div>
+        <div class="pr"><span>Others</span><div class="track"><i style="--v:21"></i><u style="--v:21"></u></div><b>21% ±3</b></div>
+      </div>
+      <figcaption>A made-up poll of the kind every news channel shows. The orange brackets are the "give or take".</figcaption>
+    </figure>
+  </section>
+
+  <section id="toy" class="grid">
+    <div class="side-text">
+      <h2 class="rise">Throw a handful of coins</h2>
+      <p class="rise">Throw 10 coins on the floor and count the heads. Put a block on that number's pile. Do it again, and again.</p>
+      <p class="rise">The piles near 5 grow tall. The piles at 0 and 10 hardly grow at all. Why? To get 10 heads, every single coin has to land heads, and there is only one way for that to happen. To get 5 heads, any 5 of the 10 coins can be the heads, and there are 252 ways to pick them.</p>
+      <table class="dilute rise">
+        <thead><tr><th scope="col">Heads out of 10</th><th scope="col">Ways it can happen</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>1</td></tr>
+          <tr><td>8</td><td>45</td></tr>
+          <tr class="hi"><td>5</td><td>252</td></tr>
+        </tbody>
+      </table>
+      <p class="rise"><span class="em">The middle has many ways to happen. The edges have very few. So the middle wins.</span></p>
+      <p class="rise">That hill shape is called the bell curve, because it looks like a bell. Coins making a bell is not the surprise. The surprise comes next.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="Coin pile simulation">
+      <canvas id="pile" width="220" height="140" role="img" aria-label="Piles of blocks for 0 to 10 heads out of 10 coins"></canvas>
+      <div class="axis" aria-hidden="true"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      <p class="readout" id="pile-out" aria-live="polite"></p>
+      <div class="controls">
+        <button class="btn" id="pile-1">Throw once</button>
+        <button class="btn quiet" id="pile-100">Throw 100 times</button>
+        <button class="btn quiet" id="pile-reset">Empty the piles</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="machine" class="grid">
+    <div class="side-text">
+      <h2 class="rise">It doesn't care what you average</h2>
+      <p class="rise">Coins are tidy. Try something messy: a die, the minutes you wait for a bus, or a shape you draw yourself. The machine takes a few samples, averages them, writes the average down, and repeats that 2,000 times.</p>
+      <p class="rise">The top screen is the thing you are sampling from. The bottom screen is where the 2,000 averages land. The dotted line is the bell the theorem predicts before a single sample is taken.</p>
+      <p class="rise">With 1 sample per average, the bottom just copies the top. By about 5, a hill appears. By 30 it is the same hill every time, whatever shape you started with. Try the bus, or draw something ugly.</p>
+      <p class="rise"><span class="em">Why do the messy shapes disappear?</span> It's the coin reason again. For an average to come out extreme, every sample would have to be extreme in the same direction at once. That is rare. There are far more ways for big ones and small ones to mix and cancel out.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="Sum machine">
+      <p class="tag" id="src-tag">What we sample from</p>
+      <canvas id="src" width="240" height="70" role="img" aria-label="The shape of the source being sampled"></canvas>
+      <p class="tag">Where 2,000 averages land</p>
+      <canvas id="avg" width="240" height="120" role="img" aria-label="Histogram of 2,000 averages with the predicted bell curve"></canvas>
+      <p class="readout" id="avg-out" aria-live="polite"></p>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Source">
+          <button class="btn quiet" data-src="coin" aria-pressed="false">Coin</button>
+          <button class="btn quiet" data-src="die" aria-pressed="true">Die</button>
+          <button class="btn quiet" data-src="wait" aria-pressed="false">Bus wait</button>
+          <button class="btn quiet" data-src="drawn" aria-pressed="false">Draw your own</button>
+          <button class="btn quiet" data-src="torch" aria-pressed="false">Torch</button>
+        </div>
+        <label>Samples per average <input type="range" id="avg-n" min="1" max="50" step="1" value="5"> <output id="avg-nv" class="num">5</output></label>
+        <button class="btn" id="avg-go">Sample again</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="law" class="grid">
+    <div class="law-text">
+      <h2 class="rise">What it actually says</h2>
+      <p class="eq rise">When you average many random things, the results pile up in a hill around the truth. The hill always has the same shape, and you can predict how wide it is.</p>
+      <p class="rise">The law of large numbers said the average gets to the truth. This theorem says how far off you are likely to be on the way. And it needs only one formula, the one behind every poll:</p>
+      <p class="eq rise">likely error ≈ 2 × spread ÷ √(number of samples)</p>
+      <ul class="parts rise">
+        <li><span class="em">Spread</span> is how much single answers differ from each other. In a country split down the middle, it is 0.5.</li>
+        <li><span class="em">√, the square root,</span> is why 4 times the samples only halves the error.</li>
+        <li><span class="em">2</span> gives you "right about 95 times out of 100".</li>
+      </ul>
+      <p class="rise">For the poll: 2 × 0.5 ÷ √1000 ≈ 0.03. That is the ±3. Notice what is not in the formula: the size of the country.</p>
+      <details class="rise">
+        <summary>The precise version (skippable)</summary>
+        <p>Take independent samples X₁ … Xₙ from one source with average μ and spread σ, and let X̄ₙ be their average. Then, as n grows,</p>
+        <p class="num">(X̄ₙ − μ) ÷ (σ / √n) &nbsp;→&nbsp; the standard bell curve N(0, 1)</p>
+        <p>"→" here means the shape of the pile of averages gets closer and closer to the bell. It says nothing about any one run. The "2" in the plain formula is really 1.96: 95% of the bell sits within 1.96 spreads of its middle.</p>
+      </details>
+    </div>
+    <aside class="law-side rise" aria-label="The three conditions">
+      <h3>It works when</h3>
+      <ol>
+        <li>The samples don't copy each other.</li>
+        <li>They all come from the same source.</li>
+        <li>No crazy outliers keep showing up.</li>
+      </ol>
+    </aside>
+  </section>
+
+  <section id="history" class="tiles" aria-labelledby="history-h">
+    <h2 id="history-h" class="rise">Where it came from</h2>
+    <div class="tile t1 rise">
+      <span class="fig num">1733</span>
+      <p>Abraham de Moivre, a French mathematician who made part of his living answering gamblers' questions in London, notices that the number of heads in many coin flips follows a bell-shaped curve. It saves him from adding up enormous lists of numbers. Around 1810, Pierre-Simon Laplace shows the same hill appears for far more than coins.</p>
+    </div>
+    <div class="tile t2 rise">
+      <span class="fig num">1901</span>
+      <p>Aleksandr Lyapunov proves it properly, for almost any source.</p>
+    </div>
+    <div class="tile t3 rise">
+      <span class="fig num">1920</span>
+      <p>George Pólya names it the central limit theorem. Central as in most important.</p>
+    </div>
+  </section>
+
+  <section id="speed" class="grid">
+    <div class="side-text">
+      <h2 class="rise">Precision is expensive, again</h2>
+      <p class="rise">Because of the square root, every extra point of precision costs more people than the last. Here is the poll's margin of error for a split country:</p>
+      <table class="dilute rise">
+        <thead><tr><th scope="col">People asked</th><th scope="col">Give or take</th></tr></thead>
+        <tbody>
+          <tr><td>100</td><td>±9.8 points</td></tr>
+          <tr><td>400</td><td>±4.9 points</td></tr>
+          <tr class="hi"><td>1,000</td><td>±3.1 points</td></tr>
+          <tr><td>4,000</td><td>±1.5 points</td></tr>
+          <tr><td>10,000</td><td>±1.0 point</td></tr>
+        </tbody>
+      </table>
+      <p class="rise">Going from 1,000 to 10,000 people buys about two points. That's why most polls stop at one or two thousand.</p>
+    </div>
+    <div class="side-text" style="grid-column: 7 / -1">
+      <h3 class="rise">How many before the bell shows up?</h3>
+      <p class="rise">It depends on how lopsided the source is. A die looks like a bell by about 5 samples. Bus waits, incomes and other lopsided things take dozens, and the far edges of the hill take longest of all. The popular rule "you need 30" is a habit, not a theorem.</p>
+      <div class="controls rise">
+        <button class="btn quiet" data-try="wait,2">Bus wait, 2 samples</button>
+        <button class="btn quiet" data-try="wait,30">Bus wait, 30 samples</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="limits" class="grid limits">
+    <div class="limits-intro">
+      <h2 class="rise">Read the small print</h2>
+      <p class="rise">Averaging shrinks noise. It never fixes a biased sample: a poll that only asks city voters gives a confident, wrong answer.</p>
+    </div>
+    <div class="cat rise"><h3>What it promises</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="die" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Any shape works<span>→ a bell</span></div><p>Coins, dice, bus waits, your scribble. The hill doesn't care where the numbers came from.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="coin" width="32" height="32" aria-hidden="true"></svg><div><div class="row">You know your error<span>without the truth</span></div><p>The poll doesn't know the real answer, yet it can say how far off it probably is.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="lens" width="32" height="32" aria-hidden="true"></svg><div><div class="row">The pot's size doesn't matter<span>only the spoon</span></div><p>1,000 voters give about ±3 for a town of a lakh or a country of 90 crore.</p></div></li>
+    </ul>
+    <div class="cat rise"><h3>Where it breaks</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="spike" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Crazy outliers<span>never settles</span></div><p>Point a torch in a random direction at a very long wall. Usually the spot lands near you. Now and then you point almost along the wall and it lands a kilometre away. One wild spot drags the whole average, so no hill ever forms. Mathematicians call this Cauchy (koh-SHEE) randomness, after Augustin-Louis Cauchy. Pick "Torch" in the machine above.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="chain" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Samples that copy each other<span>too sure</span></div><p>Ask 1,000 people from one family and you have really asked one opinion many times. The ±3 promise is only for answers that don't copy each other.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="outlier" width="32" height="32" aria-hidden="true"></svg><div><div class="row">The far edges<span>rarer on paper</span></div><p>The bell is most accurate in the middle and least accurate at the edges. "Once in 10,000 years" market crashes keep arriving every decade, partly because people trusted the bell's edges.</p></div></li>
+    </ul>
+  </section>
+
+  <section id="build" class="grid">
+    <div class="side-text">
+      <h2 class="rise">Build it</h2>
+      <p class="rise">Here is the whole method as code. It isn't a copy: the page reads this function out of its own script and runs it in every demo from here down.</p>
+      <pre class="code rise"><code id="code"></code></pre>
+      <p class="rise">Three steps: average the samples, measure their spread, then report the average give or take 1.96 × spread ÷ √n. (1.96 is the precise version of the "2".)</p>
+      <p class="rise">The screen rolls a die n times, builds an interval, and repeats that 100 times. A die's true average is 3.5, the orange line. Green bars caught it. White bars missed. The theorem's promise is that about 95 of 100 catch it, however many rolls you pick.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="Confidence interval coverage">
+      <canvas id="cover" width="240" height="200" role="img" aria-label="100 intervals around the true value 3.5; most contain it"></canvas>
+      <div class="axis" aria-hidden="true"><span>1</span><span>3.5</span><span>6</span></div>
+      <p class="readout" id="cover-out" aria-live="polite"></p>
+      <div class="controls">
+        <label>Rolls per interval <input type="range" id="cover-n" min="0.7" max="2.3" step="0.1" value="1.3"> <output id="cover-nv" class="num">20</output></label>
+        <div class="seg" role="group" aria-label="Confidence">
+          <button class="btn quiet" data-z="1.645" aria-pressed="false">90%</button>
+          <button class="btn quiet" data-z="1.96" aria-pressed="true">95%</button>
+          <button class="btn quiet" data-z="2.576" aria-pressed="false">99%</button>
+        </div>
+        <button class="btn" id="cover-go">Roll again</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="wild" class="grid wild" aria-labelledby="wild-h">
+    <h2 class="wild-head">Where it runs today</h2>
+    <div class="wild-list" role="group" aria-label="Real-world uses">
+      <h2 id="wild-h">Where it runs today</h2>
+      <button data-k="poll" aria-pressed="true">Election polls</button>
+      <button data-k="bench" aria-pressed="false">AI benchmarks</button>
+      <button data-k="sgd" aria-pressed="false">Training noise</button>
+    </div>
+    <div class="stage">
+      <div class="block" aria-hidden="true"></div>
+      <div class="screen">
+        <div class="panel on" data-k="poll">
+          <canvas id="poll" width="240" height="200" role="img" aria-label="20 polls of 1,000 voters, each with its margin of error, around the true 42%"></canvas>
+          <div class="axis" aria-hidden="true"><span>35%</span><span>42%</span><span>49%</span></div>
+          <p class="readout" id="poll-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="poll-go">Run 20 more polls</button></div>
+        </div>
+        <div class="panel" data-k="bench">
+          <canvas id="bench" width="240" height="200" role="img" aria-label="20 test sets scoring the same model, each score with its error bar, around the true 80%"></canvas>
+          <div class="axis" aria-hidden="true"><span>60%</span><span>80%</span><span>100%</span></div>
+          <p class="readout" id="bench-out" aria-live="polite"></p>
+          <div class="controls"><label>Test questions <input type="range" id="bench-n" min="1.7" max="4" step="0.1" value="2.7"> <output id="bench-nv" class="num">500</output></label></div>
+        </div>
+        <div class="panel" data-k="sgd">
+          <canvas id="sgd" width="240" height="160" role="img" aria-label="Histogram of mini-batch gradient estimates with the predicted bell curve"></canvas>
+          <p class="readout" id="sgd-out" aria-live="polite"></p>
+          <div class="controls"><label>Batch size <input type="range" id="sgd-b" min="0" max="8" step="1" value="0"> <output id="sgd-bv" class="num">1</output></label></div>
+        </div>
+      </div>
+    </div>
+    <div class="wild-fact" aria-live="polite">
+      <p class="big" id="fact-big"></p>
+      <p id="fact-text"></p>
+    </div>
+  </section>
+
+  <section class="next grid" aria-labelledby="next-h">
+    <h2 id="next-h">A frog that remembers</h2>
+    <div class="lead">
+      <p>A frog hops between three lily pads, numbered 1, 2 and 3. It is lazy: 8 times out of 10 it stays where it is. Over a long time it spends equal time on each pad, so its average pad is 2, exactly like picking a pad at random.</p>
+      <p>So average 50 frog hops, and compare with averaging 50 pads picked at random. Do both 2,000 times.</p>
+      <button class="btn" id="frog-go">Run again</button>
+    </div>
+    <div class="hist">
+      <p class="tag">Pads picked at random</p>
+      <canvas id="frog-a" width="240" height="90" role="img" aria-label="Averages of randomly picked pads form a narrow hill around 2"></canvas>
+      <p class="tag">Following the frog</p>
+      <canvas id="frog-b" width="240" height="90" role="img" aria-label="Averages of the frog's pads form a much wider hill around 2"></canvas>
+      <div class="axis" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div>
+      <p class="readout" id="frog-out" aria-live="polite"></p>
+    </div>
+    <p class="last">The hill survived, but it got wider. Each hop remembers the last one. What does randomness with a memory look like? That's the next issue.</p>
+  </section>
+</main>
+
+<footer id="series">
+  <svg class="mark" id="mark" role="img" aria-label="Sample Space"></svg>
+  <div class="foot">
+    <div><h3>This issue</h3><ul><li><a href="#toy">Intuition</a></li><li><a href="#law">The theorem</a></li><li><a href="#speed">Speed</a></li><li><a href="#limits">Limits</a></li><li><a href="#build">Build it</a></li><li><a href="#wild">In the wild</a></li></ul></div>
+    <div><h3>Read further</h3><ul><li><a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central limit theorem</a></li><li><a href="https://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem">De Moivre–Laplace theorem</a></li><li><a href="https://en.wikipedia.org/wiki/Galton_board">Galton board</a></li><li><a href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a></li></ul></div>
+    <div><h3>The series</h3><ul><li>Sample Space explains one idea from maths, statistics or machine learning per issue, with simulations you can play with.</li><li><a href="docs/THEME.md">How it's designed</a></li></ul></div>
+    <div><h3>Code</h3><ul><li>One HTML file, one stylesheet, one script. No dependencies. Every figure is drawn by the page.</li></ul></div>
+  </div>
+  <div class="last-row"><span>© 2026 Sample Space</span><a class="btn" href="#top">Back to top</a></div>
+</footer>
+
+<script src="demos.js"></script>
+</body>
+</html>
