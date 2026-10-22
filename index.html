@@ -14,9 +14,10 @@
   .wordmark { font-weight: 700; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
   .hero h1 { font-size: var(--step-head); color: #f1f7f2; margin-top: clamp(40px, 7vh, 72px); }
   .hero p { max-width: 52ch; margin: 14px 0 0; }
-  .issues { padding: clamp(40px, 6vw, 72px) var(--m); max-width: 1080px; }
+  .issues { padding: clamp(40px, 6vw, 72px) var(--m); }
   .issues h2 { font-size: var(--step-lead); margin-bottom: 24px; }
-  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  /* columns of at least 340px; auto-fit drops unused columns so the cards always span the full width */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 20px; }
   .card { display: flex; flex-direction: column; background: var(--surface); clip-path: var(--px-cut); text-decoration: none; transition: transform 200ms ease, background-color 200ms ease; }
   a.card:hover { transform: translateY(-3px); background: #c1c4bb; }
   .card img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
@@ -33,7 +34,6 @@
   .pile { aspect-ratio: 16 / 9; display: grid; place-items: end center; padding: 8% 12% 6%; }
   .pile svg { width: 100%; height: 100%; }
   footer { background: var(--surface); padding: 24px var(--m); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: var(--step-small); }
-  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
