@@ -7,6 +7,7 @@ Live at **https://mathblender17.github.io/sample-space/**
 |---|---|
 | The law of large numbers | [`law-of-large-numbers/`](law-of-large-numbers/) |
 | The central limit theorem | [`central-limit-theorem/`](central-limit-theorem/) |
+| Markov chains | [`markov-chains/`](markov-chains/) |
 
 ## How this repo works
 - Each issue is written in its own local folder with its own git repo, e.g. `WriteUps/Law of large numbers`.

@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markov Chains · Sample Space</title>
+<meta name="description" content="An interactive guide to Markov chains: randomness with a memory of one step. Follow a lazy frog, play Snakes and Ladders, teach a page to babble, and see how Google ranked the web.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ---------- hero: a stack of file folders on the screen ---------- */
+  .hero { position: relative; min-height: max(100svh, 780px); background: var(--screen); color: var(--screen-ink); overflow: hidden; }
+  .bar { position: relative; display: flex; justify-content: center; align-items: center; padding: 22px var(--m); font-size: var(--step-small); }
+  .wordmark { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font-size: var(--step-body); }
+  .bar .right { position: absolute; right: var(--m); }
+  .hero-text { text-align: center; padding: clamp(40px, 6vh, 72px) var(--m) 0; }
+  .hero h1 { font-size: var(--step-display); line-height: 0.95; letter-spacing: -0.045em; color: #f1f7f2; }
+  .hero-sub { font-size: var(--step-body); max-width: 50ch; margin: 28px auto 0; color: var(--screen-ink); }
+  .folders { position: absolute; left: 7%; right: 7%; top: max(54%, 450px); bottom: 0; }
+  .folder { position: absolute; inset: calc(var(--i) * 54px) 0 0 0; background: var(--c); color: var(--t); }
+  .folder .tab { position: absolute; bottom: 100%; left: var(--x); width: clamp(120px, 15%, 200px); height: 40px; background: var(--c); color: var(--t);
+    clip-path: var(--px-tab); display: flex; align-items: center; justify-content: center; font-size: var(--step-small); font-weight: 500; text-decoration: none;
+    padding-top: 8px; transition: transform 160ms ease; }
+  .folder .tab:hover { transform: translateY(-4px); }
+  .folder.front { padding: 32px; }
+
+  /* ---------- sections ---------- */
+  section { padding-block: var(--gap) 0; }
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); padding-inline: var(--m); }
+  .em { font-weight: 700; }
+
+  /* hook: the phone keyboard, as a screen */
+  .hook { padding-block: clamp(96px, 16vh, 180px) clamp(40px, 6vh, 80px); align-items: center; row-gap: 32px; }
+  .hook .big { grid-column: 1 / span 6; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; letter-spacing: -0.015em; max-width: 34ch; margin: 0; }
+  .hook .more { grid-column: 1 / span 6; margin: 0; }
+  .hook-pic { grid-column: 8 / -1; grid-row: 1 / span 2; margin: 0; }
+  .phone { padding: clamp(18px, 2vw, 28px); }
+  .phone-h { font-size: var(--step-small); margin: 0 0 18px; color: var(--screen-ink); }
+  .typed { background: var(--screen-2); padding: 14px 16px; font-size: var(--step-lead); color: #f1f7f2; margin-bottom: 14px; }
+  .typed i { display: inline-block; width: 0.5em; height: 1em; vertical-align: -0.12em; background: var(--accent); margin-left: 2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .chips span { background: var(--screen-2); padding: 10px 6px; text-align: center; font-weight: 500; }
+  .chips span:first-child { background: var(--phosphor); color: var(--screen); }
+  figcaption { font-size: var(--step-small); color: var(--muted); margin-top: 12px; }
+
+  /* text + sticky screen (frog, pond, crowd, build) */
+  .side-text { grid-column: 1 / span 5; }
+  .side-text h2 { margin-bottom: 32px; }
+  .side-screen { grid-column: 6 / -1; padding: clamp(16px, 2vw, 28px); align-self: start; position: sticky; top: 24px; }
+  .side-screen .readout { margin: 16px 0; min-height: 3.2em; }
+  .side-screen canvas + canvas { margin-top: 10px; }
+  .axis { display: flex; justify-content: space-between; font-size: var(--step-small); color: var(--screen-ink); font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .axis.pads { justify-content: space-around; }
+  .tag { font-size: var(--step-small); color: var(--screen-ink); margin: 0 0 6px; }
+  canvas + .tag, .axis + .tag { margin-top: 12px; }
+  table.dilute { border-collapse: collapse; margin: 8px 0 28px; font-variant-numeric: tabular-nums; width: 100%; max-width: 30rem; }
+  .dilute th, .dilute td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 2px solid var(--surface); }
+  .dilute th { font-weight: 500; color: var(--muted); font-size: var(--step-small); }
+  .dilute tr:last-child td { border-bottom: 0; }
+  .dilute .hi td { font-weight: 700; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .controls + .controls { margin-top: 10px; }
+
+  /* the pond's rules, on the screen */
+  table.rules { border-collapse: collapse; width: 100%; font-size: var(--step-small); font-variant-numeric: tabular-nums; margin: 14px 0 4px; }
+  .rules th, .rules td { padding: 6px 8px; text-align: right; border-bottom: 2px solid var(--screen-2); font-weight: 400; }
+  .rules th:first-child { text-align: left; }
+  .rules thead th { color: var(--screen-ink); opacity: 0.75; }
+  .rules td.stay { color: var(--phosphor); font-weight: 500; }
+
+  /* the statement */
+  .law-text { grid-column: 1 / span 7; }
+  .law-text h2 { margin-bottom: 32px; }
+  .eq { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; background: var(--surface); padding: 24px 28px; clip-path: var(--px-cut); max-width: none; margin: 8px 0 32px; }
+  .parts { padding-left: 1.3em; margin: 16px 0 28px; max-width: 64ch; }
+  .parts li { margin-bottom: 12px; padding-left: 4px; }
+  details { background: var(--surface); clip-path: var(--px-cut); padding: 20px 28px; margin-top: 32px; max-width: 64ch; }
+  summary { cursor: pointer; font-weight: 500; }
+  details[open] summary { margin-bottom: 16px; }
+  .law-side { grid-column: 9 / -1; align-self: start; background: var(--ink); color: #eef2ee; clip-path: var(--px-cut); padding: 28px; }
+  .law-side h3 { margin-bottom: 20px; }
+  .law-side ol { padding-left: 1.2em; margin: 0; }
+  .law-side li { margin-bottom: 14px; }
+
+  /* history: stepped tiles */
+  .tiles { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; padding-inline: var(--m); align-items: start; }
+  .tiles h2 { grid-column: 7 / span 6; grid-row: 1; font-size: var(--step-lead); align-self: start; padding-top: 2vh; }
+  .tile { position: relative; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; clip-path: var(--px-cut); overflow: hidden; }
+  .tile .fig { font-size: var(--step-head); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .tile p { margin: 0; max-width: 40ch; }
+  .t1 { grid-column: 1 / span 6; grid-row: 1 / span 2; min-height: 70vh; background: var(--accent); color: var(--ink); }
+  .t1 canvas { width: 100%; height: auto; image-rendering: pixelated; }
+  .t1 .note { font-size: var(--step-small); }
+  .t2 { grid-column: 7 / span 3; grid-row: 1; min-height: 40vh; margin-top: 14vh; background: var(--ink); color: #eef2ee; }
+  .t3 { grid-column: 10 / span 3; grid-row: 1; min-height: 34vh; margin-top: 26vh; background: var(--surface); }
+
+  /* limits: two-column list with sprite bullets */
+  .limits .cat { grid-column: 1 / -1; padding-top: 96px; margin-bottom: 40px; }
+  .limits .cat:first-of-type { padding-top: 0; }
+  .limits .cat h3 { font-size: var(--step-head); letter-spacing: -0.03em; }
+  .items { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; row-gap: 40px; list-style: none; padding: 0; margin: 0; }
+  .items li { display: flex; gap: 20px; }
+  .items .row { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
+  .items .row span { font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .items p { margin: 6px 0 0; max-width: 46ch; }
+  .items .btn { margin-top: 12px; font-size: var(--step-small); padding: 0.6em 1.1em; }
+  .limits-intro { grid-column: 1 / span 8; margin-bottom: 72px; }
+  .limits-intro h2 { margin-bottom: 24px; }
+
+  /* build it: the code the page runs */
+  .code { background: var(--screen); color: var(--screen-ink); clip-path: var(--px-cut); padding: 24px 28px; margin: 8px 0 28px; overflow-x: auto; font-size: var(--step-small); line-height: 1.6; }
+  .code code { font-family: inherit; white-space: pre; }
+  .screen textarea, .screen input[type="text"] { width: 100%; font: inherit; font-size: var(--step-small); background: var(--screen-2); color: var(--screen-ink); border: 0; padding: 12px 14px; resize: vertical; }
+  .babble { background: var(--screen-2); padding: 14px 16px; margin: 12px 0 0; min-height: 7.5em; color: #f1f7f2; max-width: none; }
+
+  /* in the wild: one screen on a big pixel block, swapped from a list */
+  .wild { position: relative; }
+  .wild-list { grid-column: 1 / span 4; align-self: end; display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; }
+  .wild-list h2, .wild-list button { font-size: clamp(1.75rem, 1.2rem + 1.7vw, 2.75rem); line-height: 1.15; letter-spacing: -0.03em; }
+  .wild-list h2 { color: var(--muted); margin-bottom: 4px; }
+  .wild-list button { font-family: inherit; font-weight: 500; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--muted); transition: color 240ms ease, transform 240ms ease; }
+  .wild-list button[aria-pressed="true"] { color: var(--ink); transform: translateX(10px); }
+  .wild-list button:hover { color: var(--ink); }
+  .stage { grid-column: 5 / span 5; position: relative; padding-top: 48px; }
+  .block { position: absolute; inset: 0 -6% 12% -6%; background: var(--blk, var(--accent)); clip-path: var(--px-cut); --p: 16px; transition: background-color 240ms ease; }
+  .wild .screen { position: relative; padding: clamp(16px, 2vw, 24px); margin-top: -48px; }
+  .panel { display: none; }
+  .panel.on { display: block; animation: fade 240ms ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .panel .readout { margin: 14px 0; min-height: 3.2em; }
+  .panel .chips { margin-top: 10px; }
+  #art { max-width: 240px; margin-inline: auto; }
+  .panel .chips button { font: inherit; font-weight: 500; border: 0; background: var(--screen-2); color: var(--screen-ink); padding: 10px 6px; cursor: pointer; }
+  .panel .chips button:first-child { background: var(--phosphor); color: var(--screen); }
+  /* the block overhangs the stage by 6%, which outgrows the column gap on wide screens; pad the text clear of it */
+  .wild-fact { grid-column: 10 / -1; align-self: end; padding-bottom: 8px; padding-left: 2.5vw; }
+  .wild-fact .big { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; margin-bottom: 20px; }
+  .wild-head { display: none; grid-column: 1 / -1; margin-bottom: 24px; }
+
+  /* premonition */
+  .next { background: var(--screen); color: var(--screen-ink); margin-top: var(--gap); padding-block: var(--gap); }
+  .next h2 { color: #f1f7f2; grid-column: 1 / span 5; margin-bottom: 28px; }
+  .next .lead { grid-column: 1 / span 5; }
+  .next .lead p { color: var(--screen-ink); }
+  .next .hist { grid-column: 7 / -1; grid-row: 1 / span 3; }
+  .next .hist canvas { width: 100%; max-width: 620px; height: auto; image-rendering: pixelated; }
+  .next .last { grid-column: 1 / span 5; font-size: var(--step-lead); line-height: 1.3; font-weight: 500; color: #f1f7f2; margin-top: 24px; }
+
+  /* footer: the series mark built from pixels */
+  footer { background: var(--surface); padding: 72px var(--m) 32px; }
+  .mark { width: 100%; height: auto; shape-rendering: crispEdges; }
+  .foot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; margin-top: 56px; font-size: var(--step-small); }
+  .foot div { grid-column: span 3; }
+  .foot h3 { font-size: var(--step-body); font-weight: 700; margin-bottom: 10px; letter-spacing: 0; }
+  .foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .last-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; font-size: var(--step-small); }
+
+  @media (max-width: 900px) {
+    .hook .big, .hook .more, .hook-pic, .side-text, .side-screen, .law-text, .law-side { grid-column: 1 / -1; grid-row: auto; }
+    .side-screen { position: static; margin-top: 32px; }
+    .law-side { margin-top: 32px; }
+    .tiles { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tiles h2 { grid-column: 1 / -1; grid-row: 1; padding: 0 0 20px; }
+    .t1 { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
+    .t2, .t3 { grid-column: span 1; grid-row: 3; min-height: 0; margin-top: 0; padding: 18px; }
+    .items { grid-template-columns: 1fr; }
+    .limits-intro { grid-column: 1 / -1; }
+    .wild-list, .stage, .wild-fact { grid-column: 1 / -1; }
+    .stage { order: -1; margin-bottom: 32px; padding-top: 32px; }
+    .block { inset: 0 0 12% 0; }
+    .wild-head { display: block; order: -2; }
+    .wild-list { flex-direction: row; flex-wrap: wrap; gap: 6px 22px; }
+    .wild-list h2 { display: none; }
+    .wild-list button { white-space: nowrap; font-size: 1.5rem; }
+    .wild-list button[aria-pressed="true"] { transform: none; }
+    .wild-fact { margin-top: 24px; padding-left: 0; }
+    .next h2, .next .lead, .next .hist, .next .last { grid-column: 1 / -1; grid-row: auto; }
+    .next .hist { margin: 24px 0; }
+    .foot div { grid-column: span 6; margin-bottom: 24px; }
+  }
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 12vw; }
+    .bar .right { display: none; }
+    .folders { left: 0; right: 0; top: max(50%, 420px); }
+    .folder { inset: calc(var(--i) * 46px) 0 0 0; }
+    .folder .tab { height: 32px; width: 31%; }
+    .folder:nth-child(3n+1) .tab { left: 67%; } .folder:nth-child(3n+2) .tab { left: 34.5%; } .folder:nth-child(3n) .tab { left: 2%; }
+    .folder.front { padding: 24px var(--m); }
+    .folder.front .btn { width: 100%; justify-content: center; }
+    .hook .big { font-size: 1.5rem; }
+    .t2, .t3 { grid-column: 1 / -1; grid-row: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <nav class="bar" aria-label="Site">
+    <a class="wordmark" href="#top" id="top"><svg class="sprite" width="20" height="20" viewBox="0 0 5 5" aria-hidden="true"><rect x="0" y="3" width="1" height="2" fill="#8dffa8"/><rect x="2" y="1" width="1" height="4" fill="#8dffa8"/><rect x="4" y="0" width="1" height="5" fill="#ff4d00"/></svg>Sample Space</a>
+    <a class="right" href="#series">About the series</a>
+  </nav>
+  <div class="hero-text">
+    <h1>Markov<br>chains</h1>
+    <p class="hero-sub">Randomness that remembers one step. Follow a lazy frog, play Snakes and Ladders, teach a page to babble, and see how one simple rule ranks the web and snaps your car onto the right road.</p>
+  </div>
+  <div class="folders">
+    <div class="folder" style="--i:0; --c:#2b322f; --t:var(--screen-ink); --x:84%"><a class="tab" href="#wild">In the wild</a></div>
+    <div class="folder" style="--i:1; --c:var(--phosphor); --t:var(--screen); --x:67.5%"><a class="tab" href="#build">Build it</a></div>
+    <div class="folder" style="--i:2; --c:var(--muted); --t:#eef2ee; --x:51%"><a class="tab" href="#limits">Limits</a></div>
+    <div class="folder" style="--i:3; --c:var(--accent); --t:var(--ink); --x:34.5%"><a class="tab" href="#speed">Speed</a></div>
+    <div class="folder" style="--i:4; --c:var(--surface); --t:var(--ink); --x:18%"><a class="tab" href="#law">The idea</a></div>
+    <div class="folder front" style="--i:5; --c:var(--bg); --t:var(--ink); --x:1.5%"><a class="tab" href="#frog">Intuition</a>
+      <a class="btn" href="#frog">Follow the frog</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hook grid" aria-label="The puzzle">
+    <p class="big rise">Type "good" on your phone and it offers morning, night, luck. It hasn't read your message. It looked at one word, the last one, and remembered what usually comes next.</p>
+    <div class="more rise">
+      <p>That's a strange kind of memory: it forgets everything except right now. Yet it is good enough to finish your sentences, rank every page on the web, and tell your map which road you are on.</p>
+      <p>Last issue ended with a lazy frog whose averages piled up in a hill 2.3 times wider than they should have. The frog had this same one-step memory. This issue follows the frog, and by the end that 2.3 will make sense.</p>
+    </div>
+    <figure class="hook-pic rise">
+      <div class="screen phone" role="img" aria-label="A phone keyboard: after typing good, it suggests morning, night and luck">
+        <p class="phone-h">Message</p>
+        <div class="typed">Have a good<i></i></div>
+        <div class="chips"><span>morning</span><span>night</span><span>luck</span></div>
+      </div>
+      <figcaption>A made-up keyboard of the kind on every phone. It only looks at the last word.</figcaption>
+    </figure>
+  </section>
+
+  <section id="frog" class="grid">
+    <div class="side-text">
+      <h2 class="rise">Follow the frog</h2>
+      <p class="rise">Three lily pads, numbered 1, 2 and 3, and one lazy frog. Every second it makes one choice:</p>
+      <ul class="parts rise">
+        <li>8 times out of 10 it stays where it is.</li>
+        <li>Otherwise it jumps to one of the other two pads, either one.</li>
+      </ul>
+      <p class="rise">That's all. It doesn't remember where it was yesterday, or how long it has sat still. Only the pad under its feet matters.</p>
+      <p class="rise">Watch the tally below the pond. Early on it's lopsided, because the frog sits on one pad for a while. Leave it running and each pad's share creeps toward a third, the orange line.</p>
+      <p class="rise"><span class="em">A memory of one step, and still the counts settle.</span> They just take their time.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="The lazy frog">
+      <canvas id="pond" width="240" height="80" role="img" aria-label="Three lily pads with a frog on one of them"></canvas>
+      <div class="axis pads" aria-hidden="true"><span>Pad 1</span><span>Pad 2</span><span>Pad 3</span></div>
+      <p class="tag">Share of time on each pad</p>
+      <canvas id="tally" width="240" height="50" role="img" aria-label="Bars for the share of time on each pad, with a line at one third"></canvas>
+      <p class="readout" id="frog-out" aria-live="off"></p>
+      <div class="controls">
+        <button class="btn" id="frog-play">Pause</button>
+        <div class="seg" role="group" aria-label="Speed">
+          <button class="btn quiet" data-speed="2" aria-pressed="true">Slow</button>
+          <button class="btn quiet" data-speed="40" aria-pressed="false">Fast</button>
+          <button class="btn quiet" data-speed="800" aria-pressed="false">Very fast</button>
+        </div>
+        <button class="btn quiet" id="frog-reset">Start over</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="toy" class="grid">
+    <div class="side-text">
+      <h2 class="rise">You already know this game</h2>
+      <p class="rise">In Snakes and Ladders you're on square 34 and you roll a 4. Does it matter how you got to 34, up a ladder or down a snake? No. Your square and the die decide everything. The game forgets your past at every turn.</p>
+      <p class="rise">The frog works the same way. Its "square" is its pad, and its "die" is the 8-in-10 chance of staying put.</p>
+      <p class="rise">Now build your own pond. Each slider says how sticky one pad is: how often the frog stays there. The rest of the time it jumps to one of the other two. The table shows the rules. The strip shows the frog's last 240 hops, one pixel per hop, and the bars show where it spent its time.</p>
+      <p class="rise">Make pad 1 very sticky and the others slippery. The frog ends up living on pad 1, because <span class="em">you spend the most time where you linger longest.</span> Change the starting pad: the bars still end up in the same place.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="Pond builder">
+      <p class="tag">The frog's path, one pixel per hop</p>
+      <canvas id="strip" width="240" height="30" role="img" aria-label="The last 240 hops, one row per pad"></canvas>
+      <p class="tag">Share of time on each pad, over 5,000 hops</p>
+      <canvas id="share" width="240" height="50" role="img" aria-label="Bars for the share of time on each pad, with orange marks for the long-run share"></canvas>
+      <div class="axis pads" aria-hidden="true"><span>Pad 1</span><span>Pad 2</span><span>Pad 3</span></div>
+      <table class="rules" aria-label="The rules: chance of each next pad"><thead><tr><th scope="col">From</th><th scope="col">→ 1</th><th scope="col">→ 2</th><th scope="col">→ 3</th></tr></thead><tbody id="rules"></tbody></table>
+      <p class="readout" id="pond-out" aria-live="polite"></p>
+      <div class="controls">
+        <label>Pad 1 stays <input type="range" id="s1" min="0" max="1" step="0.05" value="0.8"> <output id="s1v" class="num">80%</output></label>
+        <label>Pad 2 stays <input type="range" id="s2" min="0" max="1" step="0.05" value="0.8"> <output id="s2v" class="num">80%</output></label>
+        <label>Pad 3 stays <input type="range" id="s3" min="0" max="1" step="0.05" value="0.8"> <output id="s3v" class="num">80%</output></label>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Starting pad">
+          <button class="btn quiet" data-start="0" aria-pressed="true">Start on 1</button>
+          <button class="btn quiet" data-start="1" aria-pressed="false">on 2</button>
+          <button class="btn quiet" data-start="2" aria-pressed="false">on 3</button>
+        </div>
+        <button class="btn" id="pond-go">Hop again</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="law" class="grid">
+    <div class="law-text">
+      <h2 class="rise">What it actually says</h2>
+      <p class="eq rise">The future only cares about now.</p>
+      <p class="rise">Anything that moves between a few states, where the chance of the next state depends only on the current one, is called a <span class="em">Markov chain</span>. The states can be lily pads, board squares, words, web pages or the weather.</p>
+      <p class="rise">A chain is completely described by its table of rules: from each state, the chance of each next state. The lazy frog's table:</p>
+      <table class="dilute rise">
+        <thead><tr><th scope="col">From</th><th scope="col">To pad 1</th><th scope="col">To pad 2</th><th scope="col">To pad 3</th></tr></thead>
+        <tbody>
+          <tr><td>Pad 1</td><td class="em">80%</td><td>10%</td><td>10%</td></tr>
+          <tr><td>Pad 2</td><td>10%</td><td class="em">80%</td><td>10%</td></tr>
+          <tr><td>Pad 3</td><td>10%</td><td>10%</td><td class="em">80%</td></tr>
+        </tbody>
+      </table>
+      <p class="rise">Run any chain long enough and the share of time in each state stops changing. That's the <span class="em">long-run share</span>, and it doesn't depend on where you started. It settles because, eventually, just as many hops flow into each pad as flow out of it.</p>
+      <p class="rise">So the law of large numbers survives memory: averages still arrive at the truth. That was exactly what Andrey Markov set out to prove.</p>
+      <details class="rise">
+        <summary>The precise version (skippable)</summary>
+        <p>Write the rules as a table P, where P(i → j) is the chance of hopping from state i to state j. If π lists the long-run share of each state, then one more hop changes nothing:</p>
+        <p class="num">π(j) = Σᵢ π(i) · P(i → j) &nbsp;for every j, &nbsp;or in short &nbsp;πP = π</p>
+        <p>If every state can reach every other and the chain doesn't cycle in a fixed rhythm, there is exactly one such π, the chain's share of time converges to it from any start, and averages along the chain converge to averages under π. For the pond with the sliders, the answer is simple: pad i's share is proportional to 1 ÷ (1 − its stickiness), the average length of one visit.</p>
+      </details>
+    </div>
+    <aside class="law-side rise" aria-label="When it settles">
+      <h3>It settles when</h3>
+      <ol>
+        <li>Every pad can be reached from every other.</li>
+        <li>It doesn't hop in a fixed rhythm.</li>
+        <li>You wait long enough. Sticky chains take longer.</li>
+      </ol>
+    </aside>
+  </section>
+
+  <section id="history" class="tiles" aria-labelledby="history-h">
+    <h2 id="history-h" class="rise">Where it came from</h2>
+    <div class="tile t1 rise">
+      <span class="fig num">1913</span>
+      <canvas id="onegin" width="80" height="20" role="img" aria-label="400 squares, dark for vowels and light for consonants, drawn with Markov's counts"></canvas>
+      <p>It started with an argument. In 1902 Pavel Nekrasov claimed that averages only settle if the events don't affect each other. In 1906 Andrey Markov proved him wrong, with chains of events that each depend on the one before. In 1913 he showed a real one: he went through the first 20,000 letters of Pushkin's poem <i>Eugene Onegin</i> by hand, marking each as a vowel or a consonant. A vowel was usually followed by a consonant, yet over the whole poem about 43% of letters were vowels, just as his chain predicted.</p>
+      <p class="note">Above: 400 letters drawn by the page from Markov's own counts. Dark squares are vowels.</p>
+    </div>
+    <div class="tile t2 rise">
+      <span class="fig num">1948</span>
+      <p>Claude Shannon uses chains of letters and words to make fake English that gets more convincing the more it remembers. It's the ancestor of every text generator.</p>
+    </div>
+    <div class="tile t3 rise">
+      <span class="fig num">1998</span>
+      <p>Sergey Brin and Larry Page rank the web with a random surfer clicking links. The idea becomes Google.</p>
+    </div>
+  </section>
+
+  <section id="speed" class="grid">
+    <div class="side-text">
+      <h2 class="rise">How fast it forgets</h2>
+      <p class="rise">Put 1,000 frogs on pad 1 and let them all hop at once. After one hop, 80% are still there. After a few more, the crowd spreads out, until each pad holds about a third.</p>
+      <p class="rise">For the lazy frog, the extra crowd on pad 1 shrinks by 0.7 every hop: 0.8 for staying, minus 0.1 for landing back by chance. After 10 hops, 35% are on pad 1, close to a third. Make the pads stickier and the frogs forget more slowly.</p>
+      <p class="rise"><span class="em">Now the 2.3 from last issue.</span> Averaging 50 hops of a frog that mostly stays put is like asking 50 people when most of them repeat what their neighbour said. You don't really have 50 opinions. Here is what 50 hops are worth:</p>
+      <table class="dilute rise">
+        <thead><tr><th scope="col">The frog stays</th><th scope="col">50 hops are worth</th><th scope="col">Hill width</th></tr></thead>
+        <tbody>
+          <tr><td>1 time in 3 (no memory)</td><td>50 samples</td><td>1×</td></tr>
+          <tr><td>5 times in 10</td><td>30 samples</td><td>1.3×</td></tr>
+          <tr class="hi"><td>8 times in 10</td><td>9 samples</td><td>2.3×</td></tr>
+          <tr><td>95 times in 100</td><td>3 samples</td><td>4.4×</td></tr>
+        </tbody>
+      </table>
+      <p class="rise">Fewer real samples, wider hill. The lazy frog's 50 hops carry about as much information as 9 independent ones, and that's the whole 2.3.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="1,000 frogs">
+      <p class="tag">Where the 1,000 frogs are now</p>
+      <canvas id="crowd" width="240" height="60" role="img" aria-label="How many frogs sit on each pad, with a line at one third"></canvas>
+      <div class="axis pads" aria-hidden="true"><span>Pad 1</span><span>Pad 2</span><span>Pad 3</span></div>
+      <p class="tag">Share still on pad 1, hop by hop</p>
+      <canvas id="trace" width="240" height="60" role="img" aria-label="The share of frogs on pad 1 falling toward one third, hop by hop"></canvas>
+      <p class="readout" id="crowd-out" aria-live="polite"></p>
+      <div class="controls">
+        <label>Each pad stays <input type="range" id="crowd-s" min="0.35" max="0.95" step="0.05" value="0.8"> <output id="crowd-sv" class="num">80%</output></label>
+      </div>
+      <div class="controls">
+        <button class="btn" id="crowd-run">Hop 40 times</button>
+        <button class="btn quiet" id="crowd-1">Hop once</button>
+        <button class="btn quiet" id="crowd-reset">Back to pad 1</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="limits" class="grid limits">
+    <div class="limits-intro">
+      <h2 class="rise">Read the small print</h2>
+      <p class="rise">"Settles to a long-run share" is a promise with conditions. Each failure below loads into the pond builder above, so you can watch it break.</p>
+    </div>
+    <div class="cat rise"><h3>What it promises</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="frog" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Start anywhere<span>same answer</span></div><p>Where the frog begins stops mattering. The pond decides, not the start.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="chain" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Averages still settle<span>just slower</span></div><p>Memory doesn't break the law of large numbers. It only means you need more hops than you'd think.</p></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="bars" width="32" height="32" aria-hidden="true"></svg><div><div class="row">You can predict the share<span>from the rules</span></div><p>The table alone tells you the long-run share, before the frog makes a single hop.</p></div></li>
+    </ul>
+    <div class="cat rise"><h3>Where it breaks</h3></div>
+    <ul class="items">
+      <li class="rise"><svg class="sprite" data-sprite="trap" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Traps<span>never leaves</span></div><p>Square 100 in Snakes and Ladders: once you're there, the game is over. A pad the frog never leaves swallows everyone, wherever they started.</p><button class="btn quiet" data-preset="trap">Load the trap</button></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="loop" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Endless loops<span>no rest</span></div><p>A frog that always goes 1 → 2 → 3 → 1 spends a third of its time on each pad, but ask where it is at hop 1,000 and the answer never settles. It just depends on the count.</p><button class="btn quiet" data-preset="loop">Load the loop</button></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="split" width="32" height="32" aria-hidden="true"></svg><div><div class="row">Cut-off ponds<span>start decides</span></div><p>If no hop leads from pads 1 and 2 to pad 3, they are two separate ponds. Where you start decides where you live, forever. Try each starting pad.</p><button class="btn quiet" data-preset="cut">Load the cut-off pond</button></div></li>
+      <li class="rise"><svg class="sprite" data-sprite="lens" width="32" height="32" aria-hidden="true"></svg><div><div class="row">One step is an assumption<span>real life remembers</span></div><p>Weather, people and sentences remember more than one step back. A chain that only looks at the last word writes nonsense. Give it more memory and it improves, as "Build it" shows.</p></div></li>
+    </ul>
+  </section>
+
+  <section id="build" class="grid">
+    <div class="side-text">
+      <h2 class="rise">Build it</h2>
+      <p class="rise">Here is a text-writing machine in about 15 lines. It isn't a copy: the page reads this function out of its own script and runs it on the screen beside it.</p>
+      <pre class="code rise"><code id="code"></code></pre>
+      <p class="rise">Two steps. First, count: for every "now" (the last word, or the last two), make a list of the words that came next in the text. A word that followed twice is in the list twice. Second, babble: look at the current "now", pick from its list at random, and repeat.</p>
+      <p class="rise">Picking from a list with repeats is how the machine follows the counts: a word that came next 3 times is 3 times as likely to be picked. With a memory of one word the result is word salad. With two, whole phrases come back. Paste in any text you like.</p>
+    </div>
+    <div class="side-screen screen rise" aria-label="Babble machine">
+      <label class="tag" for="corpus">Text to learn from</label>
+      <textarea id="corpus" rows="6"></textarea>
+      <p class="babble" id="babble" aria-live="polite"></p>
+      <div class="controls" style="margin-top: 14px">
+        <div class="seg" role="group" aria-label="Memory">
+          <button class="btn quiet" data-mem="1" aria-pressed="true">Remembers 1 word</button>
+          <button class="btn quiet" data-mem="2" aria-pressed="false">Remembers 2</button>
+        </div>
+        <button class="btn" id="babble-go">Babble</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="wild" class="grid wild" aria-labelledby="wild-h">
+    <h2 class="wild-head">Where it runs today</h2>
+    <div class="wild-list" role="group" aria-label="Real-world uses">
+      <h2 id="wild-h">Where it runs today</h2>
+      <button data-k="web" aria-pressed="true">Web search</button>
+      <button data-k="keys" aria-pressed="false">Your keyboard</button>
+      <button data-k="gps" aria-pressed="false">Maps and GPS</button>
+      <button data-k="art" aria-pressed="false">Image generators</button>
+    </div>
+    <div class="stage">
+      <div class="block" aria-hidden="true"></div>
+      <div class="screen">
+        <div class="panel on" data-k="web">
+          <p class="tag">Links: A → B, C · B → C · C → A · D → A, C · E → D</p>
+          <canvas id="web" width="240" height="120" role="img" aria-label="How often a random surfer visits each of five pages"></canvas>
+          <div class="axis pads" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span></div>
+          <p class="readout" id="web-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="web-go">Surf 10,000 clicks</button></div>
+        </div>
+        <div class="panel" data-k="keys">
+          <label class="tag" for="kb">Type, then tap a suggestion. It learned from the text in "Build it".</label>
+          <input type="text" id="kb" autocomplete="off" spellcheck="false">
+          <div class="chips" id="kb-chips"></div>
+          <p class="readout" id="kb-out" aria-live="polite"></p>
+        </div>
+        <div class="panel" data-k="gps">
+          <canvas id="gps" width="240" height="120" role="img" aria-label="Noisy GPS dots between a main road and a side road, with the road a chain picks"></canvas>
+          <p class="readout" id="gps-out" aria-live="polite"></p>
+          <div class="controls"><button class="btn" id="gps-go">Drive again</button></div>
+        </div>
+        <div class="panel" data-k="art">
+          <canvas id="art" width="48" height="48" role="img" aria-label="A picture of a frog dissolving into static as noise is added step by step"></canvas>
+          <p class="readout" id="art-out" aria-live="polite"></p>
+          <div class="controls"><label>Noise step <input type="range" id="art-t" min="0" max="30" step="1" value="0"> <output id="art-tv" class="num">0</output></label></div>
+        </div>
+      </div>
+    </div>
+    <div class="wild-fact" aria-live="polite">
+      <p class="big" id="fact-big"></p>
+      <p id="fact-text"></p>
+    </div>
+  </section>
+
+  <section class="next grid" aria-labelledby="next-h">
+    <h2 id="next-h">A frog on an endless row</h2>
+    <div class="lead">
+      <p>Last one. Take away the pond and give the frog an endless row of pads. Every second it hops one pad left or one pad right, like a coin toss. No stickiness, no memory beyond where it is.</p>
+      <p>Release 1,000 frogs from the middle and see where they are after some hops.</p>
+      <label class="controls" style="margin: 20px 0 14px">Hops <input type="range" id="walk-n" min="1" max="100" step="1" value="40"> <output id="walk-nv" class="num">40</output></label>
+      <button class="btn" id="walk-go">Release 1,000 frogs</button>
+    </div>
+    <div class="hist">
+      <p class="tag">Where the 1,000 frogs ended up</p>
+      <canvas id="walk" width="240" height="110" role="img" aria-label="A histogram of where the frogs ended up: a hill centred on the starting pad"></canvas>
+      <div class="axis" aria-hidden="true"><span>30 pads left</span><span>start</span><span>30 pads right</span></div>
+      <p class="readout" id="walk-out" aria-live="polite"></p>
+    </div>
+    <p class="last">Coins, dice, polls, and now frogs. Every time, the same hill. Why does this one shape keep showing up? That's the next issue.</p>
+  </section>
+</main>
+
+<footer id="series">
+  <svg class="mark" id="mark" role="img" aria-label="Sample Space"></svg>
+  <div class="foot">
+    <div><h3>This issue</h3><ul><li><a href="#frog">Intuition</a></li><li><a href="#law">The idea</a></li><li><a href="#speed">Speed</a></li><li><a href="#limits">Limits</a></li><li><a href="#build">Build it</a></li><li><a href="#wild">In the wild</a></li></ul></div>
+    <div><h3>Read further</h3><ul><li><a href="https://en.wikipedia.org/wiki/Markov_chain">Markov chain</a></li><li><a href="https://en.wikipedia.org/wiki/Andrey_Markov">Andrey Markov</a></li><li><a href="https://en.wikipedia.org/wiki/PageRank">PageRank</a></li><li><a href="https://en.wikipedia.org/wiki/Hidden_Markov_model">Hidden Markov model</a></li><li><a href="https://en.wikipedia.org/wiki/Diffusion_model">Diffusion model</a></li></ul></div>
+    <div><h3>The series</h3><ul><li>Sample Space explains one idea from maths, statistics or machine learning per issue, with simulations you can play with.</li><li><a href="docs/THEME.md">How it's designed</a></li></ul></div>
+    <div><h3>Code</h3><ul><li>One HTML file, one stylesheet, one script. No dependencies. Every chart is drawn by the page.</li></ul></div>
+  </div>
+  <div class="last-row"><span>© 2026 Sample Space</span><a class="btn" href="#top">Back to top</a></div>
+</footer>
+
+<script src="demos.js"></script>
+</body>
+</html>
